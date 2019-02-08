@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 import threading
+from Crypto.Cipher import AES
 
 class RpiServer(threading.Thread):
     def __init__(self, ip_addr, port_num):
@@ -24,5 +25,9 @@ if __name__ == '__main__':
     ip_addr = sys.argv[1]
     port_num = int(sys.argv[2])
     groupID = sys.argv[3]
-    my_server = RpiServer(ip_addr, port_num)
-    my_server.start()
+    # my_server = RpiServer(ip_addr, port_num)
+    # my_server.start()
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(('127.0.0.1', 8888))
+    client.send("I am CLIENT\n")
+    from_server = client.recv(4096)
