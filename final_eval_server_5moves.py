@@ -45,7 +45,7 @@ class Server(threading.Thread):
         self.x = 0
         self.timeout = 60
         self.no_response = False
-        self.connection = None
+        self.connection = Nont
         self.timer = None
         self.logout = False
 
