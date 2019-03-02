@@ -3,6 +3,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import base64
 import time
+import sys
 
 
 def decryptText(b64ascii, secret_key):
@@ -36,8 +37,15 @@ def encryptText(dictt, secret_key):
     return base64.b64encode(iv + cipher.encrypt(payload))
 
 
+if len(sys.argv) != 4:
+    print('Invalid number of arguments')
+    print('python server.py [IP address] [Port] [groupID]')
+    sys.exit()
+ip_addr = sys.argv[1]
+port_num = int(sys.argv[2])
+groupID = sys.argv[3]
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 8888))
+client.connect((ip_addr, port_num))
 strr = encryptText({'action': "chicken", 'voltage': 0, 'current': 0, 'power': 0, 'cumpower': 0}, "0123456789ABCDEF")
 time.sleep(60)
 client.send(strr)
