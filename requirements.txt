@@ -1,3 +1,4 @@
+pyserial
 pycrypto
 numpy
 pandas

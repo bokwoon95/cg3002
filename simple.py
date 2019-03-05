@@ -1,10 +1,11 @@
 import serial
 import struct
 import time
+import csv
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
-PACKET_SIZE = 36
+PACKET_SIZE = 12 * 3
 
 ser = serial.Serial(
     port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
@@ -22,28 +23,22 @@ ser = serial.Serial(
 ACK = b'\x00'
 SYN = b'\x01'
 SYN_ACK = b'\x02'
-SYN_ACK_int = int.from_bytes(SYN_ACK, byteorder='big', signed=True)
 DATA_R = b'\x03'
 
 handshake_done = False
-
-# Handshake Beteen Rasberry Pi and Arduino
+#Q what is handshake_done for?
 
 
 def handshake(handshake_flag):
+    "Handshake Between Rasberry Pi and Arduino"
+    def sanitize_byte(bt):
+        "converts b'1' -> b'x01'"
+        return bytes.fromhex(bt.decode('utf-8').rjust(2,'0'))
     while handshake_flag:
         time.sleep(1)
         ser.write(SYN)  # Request for handshake to start
-        string = ser.read()
-        reply = int.from_bytes(string, byteorder='big', signed=True) - 48
-        print(type(reply))
-        print(str(SYN_ACK_int))
-        print(type(string))
-        print(str(string))
-        print(type(SYN_ACK))
-        print(str(SYN_ACK))
-        print(string == SYN_ACK)
-        if (reply == SYN_ACK_int):
+        val = ser.read()
+        if (sanitize_byte(val) == SYN_ACK):
             handshake_flag = False
             ser.write(ACK)
     print('Handshake completed')
@@ -62,6 +57,9 @@ def getPacket():
             print(dataBytes)
             unpacked_data = struct.unpack('<HHHHHHHHHHHHHHHHHH', dataBytes)
             print(unpacked_data)
+    return unpacked_data
 
 
-getPacket()
+data = getPacket()
+with open('data.csv','a') as fd:
+    csv.writer(fd).writerow(list(data))
