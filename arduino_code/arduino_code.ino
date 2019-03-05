@@ -6,12 +6,24 @@
 
 // https://arduino.stackexchange.com/questions/9899/serial-structure-data-transfer-between-an-arduino-and-a-linux-pc
 struct __attribute__ ((packed)) IMU_data {
-    int16_t AcX;          
-    int16_t AcY;
-    int16_t AcZ;
-    int16_t GyX;
-    int16_t GyY;
-    int16_t GyZ;
+    int16_t Ac1X;
+    int16_t Ac1Y;
+    int16_t Ac1Z;
+    int16_t Gy1X;
+    int16_t Gy1Y;
+    int16_t Gy1Z;
+    int16_t Ac2X;
+    int16_t Ac2Y;
+    int16_t Ac2Z;
+    int16_t Gy2X;
+    int16_t Gy2Y;
+    int16_t Gy2Z;
+    int16_t Ac3X;
+    int16_t Ac3Y;
+    int16_t Ac3Z;
+    int16_t Gy3X;
+    int16_t Gy3Y;
+    int16_t Gy3Z;
 }; 
 
 SemaphoreHandle_t xSemaphore = NULL;
@@ -172,12 +184,24 @@ void setup() {
     Serial.println(F("done with setup"));
 
     // Initialize dummy data
-    data.AcX = 1;
-    data.AcY = 2;
-    data.AcZ = 3;
-    data.GyX = 4;
-    data.GyY = 5;
-    data.GyZ = 6;
+    data.Ac1X = 1;
+    data.Ac1Y = 2;
+    data.Ac1Z = 3;
+    data.Gy1X = 4;
+    data.Gy1Y = 5;
+    data.Gy1Z = 6;
+    data.Ac2X = 1;
+    data.Ac2Y = 2;
+    data.Ac2Z = 3;
+    data.Gy2X = 4;
+    data.Gy2Y = 5;
+    data.Gy2Z = 6;
+    data.Ac3X = 1;
+    data.Ac3Y = 2;
+    data.Ac3Z = 3;
+    data.Gy3X = 4;
+    data.Gy3Y = 5;
+    data.Gy3Z = 6;
 
     handle_handshake(0);
 

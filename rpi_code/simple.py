@@ -4,7 +4,7 @@ import time
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
-PACKET_SIZE = 12
+PACKET_SIZE = 36
 
 ser = serial.Serial(
     port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
