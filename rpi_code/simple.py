@@ -60,7 +60,7 @@ def getPacket():
         endByte = ser.read().decode("utf-8")
         if (endByte == 'E'):
             print(dataBytes)
-            unpacked_data = struct.unpack('<HHHHHH', dataBytes)
+            unpacked_data = struct.unpack('<HHHHHHHHHHHHHHHHHH', dataBytes)
             print(unpacked_data)
 
 
