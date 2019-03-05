@@ -61,7 +61,7 @@ def handshake(handshake_flag):
 
                         ser.write(ACK)
 
-                        print('Handshake completed')
+        print('Handshake completed')
 
 handshake(not handshake_done)
 
@@ -75,6 +75,6 @@ def getPacket():
                 if (endByte == 'E'):
                         print(dataBytes)
                         unpacked_data = struct.unpack('<HHHHHH', dataBytes)
-                        print(type(unpacked_data))
+                        print(unpacked_data)
 
 getPacket()

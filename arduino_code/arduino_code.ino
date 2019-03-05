@@ -120,6 +120,7 @@ void handle_handshake(int skip) {
     } else if (Serial1.available()) {
       response = Serial1.read();    // From RPI to arduino   
       if (response == SYN) { // raspberry pi wants to perform handshake
+//        Serial.println("Sending SYN_ACK");
         Serial1.print(SYN_ACK);     // From arduino to RPI
       } else if (response == ACK) {
         handshake_flag = 1;
@@ -133,6 +134,7 @@ void handle_handshake(int skip) {
  * Handle inputs from raspberry PI
  */
 void handleInput(void *p){
+  Serial.println("Handling input");
   TickType_t xLastWakeTime = xTaskGetTickCount();
   const TickType_t xFrequency = 16;
   int input;
@@ -177,14 +179,16 @@ void setup() {
   data.GyY = 5;
   data.GyZ = 6;
 
+  handle_handshake(0);
+
   xSemaphore = xSemaphoreCreateBinary();
 
   xSemaphoreGive(xSemaphore);
 
   // Create Tasks
   xTaskCreate(handleInput, "handleInput", STACK_DEPTH, (void *) NULL, 0, NULL);
-  xTaskCreate(retrievePowerData, "retrievePowerData", STACK_DEPTH, (void *) NULL, 1, NULL);
-  xTaskCreate(retrieveSensorData, "retrieveSensorData", STACK_DEPTH, (void *) NULL, 1, NULL);
+//  xTaskCreate(retrievePowerData, "retrievePowerData", STACK_DEPTH, (void *) NULL, 1, NULL);
+//  xTaskCreate(retrieveSensorData, "retrieveSensorData", STACK_DEPTH, (void *) NULL, 1, NULL);
 
   vTaskStartScheduler();
 
