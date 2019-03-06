@@ -62,6 +62,14 @@ def getPacket():
             print(dataBytes)
             unpacked_data = struct.unpack('<HHHHHH', dataBytes)
             print(unpacked_data)
-
+            
+def getData(label, duration):
+        arr_2d = []
+        curr_time = time.time()
+        while (time.time() - curr_time < duration):
+                lst = list(getPacket())
+                lst.append(label)
+                arr_2d.append(lst)
+        return arr_2d
 
 getPacket()

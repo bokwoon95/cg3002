@@ -150,6 +150,8 @@ void handleInput(void *p){
                 if (handshake_flag) { 
                     Serial.println("Begin sending data");
                     send_IMU_struct();
+                } else {
+                  //TODO
                 }
             }
         }
@@ -178,8 +180,6 @@ void setup() {
     data.GyX = 4;
     data.GyY = 5;
     data.GyZ = 6;
-
-    handle_handshake(0);
 
     xSemaphore = xSemaphoreCreateBinary();
 
