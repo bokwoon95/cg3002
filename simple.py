@@ -30,7 +30,7 @@ DATA_P = b'\x04'
 handshake_done = False
 
 
-def handshake(handshake_flag):
+def handshake():
     "Handshake Between Rasberry Pi and Arduino"
     def sanitize_byte(bt):
         "converts b'1' -> b'\x01'"
@@ -42,10 +42,11 @@ def handshake(handshake_flag):
         if (sanitize_byte(val) == SYN_ACK):
             handshake_flag = False
             ser.write(ACK)
+            handshake_done = True
     print('Handshake completed')
 
 
-handshake(not handshake_done)
+handshake()
 
 
 def getIMUPacket():
