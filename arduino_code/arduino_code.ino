@@ -14,13 +14,21 @@ struct __attribute__ ((packed)) IMU_data {
     int16_t GyZ;
 }; 
 
+struct __attribute__ ((packed)) power_data {
+    int16_t voltage;
+    int16_t current;
+    int16_t power;
+}; 
+
 SemaphoreHandle_t xSemaphore = NULL;
 
 // instantiate one struct
 struct IMU_data data;
+struct power_data p_data;
 
-// length of the structure
+// length of the structures
 int IMU_data_len = sizeof(IMU_data);
+int power_data_len = sizeof(power_data);
 
 // send the structure giving the IMU state through serial
 void send_IMU_struct() {
@@ -33,13 +41,24 @@ void send_IMU_struct() {
 
 }
 
+// send the structure giving the IMU state through serial
+void send_power_struct() {
+    Serial.println("Sending: S");
+    Serial1.write('S');
+    Serial.println("Sending: E");
+    Serial1.write((uint8_t *)&p_data, power_data_len);
+    Serial1.write('E');
+    return;
+
+}
+
 int handshake_flag = 0;
 
 byte ACK = 0;
 byte SYN = 1;
 byte SYN_ACK = 2;
 byte DATA_R = 3;
-byte DATA_S = 4;
+byte DATA_P = 4;
 
 /**
  * Retrieve data from sensors
@@ -146,10 +165,18 @@ void handleInput(void *p){
                 handshake_flag = 0;
                 handle_handshake(1);
             } else if (input == DATA_R) { // RPI is requesting data
-                Serial.println("RPI input: data request");
+                Serial.println("RPI input: IMU data request");
                 if (handshake_flag) { 
                     Serial.println("Begin sending data");
                     send_IMU_struct();
+                } else {
+                  //TODO
+                }
+            } else if (input == DATA_P) {
+                Serial.println("RPI input: power data request");
+                if (handshake_flag) { 
+                    Serial.println("Begin sending data");
+                    send_power_struct();
                 } else {
                   //TODO
                 }
@@ -180,6 +207,10 @@ void setup() {
     data.GyX = 4;
     data.GyY = 5;
     data.GyZ = 6;
+
+    p_data.voltage = 7;
+    p_data.current = 8;
+    p_data.power   = 9;
 
     xSemaphore = xSemaphoreCreateBinary();
 
