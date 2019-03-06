@@ -4,8 +4,8 @@ import time
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
-IMU_PACKET_SIZE = 12
-POWER_PACKET_SIZE = 6
+IMU_PACKET_SIZE = 15
+POWER_PACKET_SIZE = 8
 
 ser = serial.Serial(
     port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
@@ -61,7 +61,7 @@ def getIMUPacket():
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
         if (endByte == 'E'):
-            unpacked_data = struct.unpack('<HHHHHH', dataBytes)
+            unpacked_data = struct.unpack('<bHHHHHHH', dataBytes)
             print(unpacked_data)
 
 def getPowerPacket():
@@ -71,7 +71,7 @@ def getPowerPacket():
         dataBytes = ser.read(POWER_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
         if (endByte == 'E'):
-            unpacked_data = struct.unpack('<HHH', dataBytes)
+            unpacked_data = struct.unpack('<HHHH', dataBytes)
             print(unpacked_data)
             
 def getData(label, duration):

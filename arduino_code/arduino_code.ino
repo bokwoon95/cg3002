@@ -6,18 +6,21 @@
 
 // https://arduino.stackexchange.com/questions/9899/serial-structure-data-transfer-between-an-arduino-and-a-linux-pc
 struct __attribute__ ((packed)) IMU_data {
+    int8_t  Device_ID;
     int16_t AcX;          
     int16_t AcY;
     int16_t AcZ;
     int16_t GyX;
     int16_t GyY;
     int16_t GyZ;
+    int16_t checksum;
 }; 
 
 struct __attribute__ ((packed)) power_data {
     int16_t voltage;
     int16_t current;
     int16_t power;
+    int16_t checksum;
 }; 
 
 SemaphoreHandle_t xSemaphore = NULL;
@@ -207,10 +210,13 @@ void setup() {
     data.GyX = 4;
     data.GyY = 5;
     data.GyZ = 6;
+    data.Device_ID = 0;
+    data.checksum = 7;
 
-    p_data.voltage = 7;
-    p_data.current = 8;
-    p_data.power   = 9;
+    p_data.voltage = 8;
+    p_data.current = 9;
+    p_data.power   = 10;
+    p_data.checksum = 11;
 
     xSemaphore = xSemaphoreCreateBinary();
 
