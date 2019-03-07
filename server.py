@@ -13,14 +13,9 @@ def betterDecryptText(b64ascii, secret_key):
     cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
     # Decrypt string
     decryptedString = cipher.decrypt(bytearr[16:]).decode('utf-8')
-    # Get everything after the first '#' character
-    decryptedString_subslice = decryptedString[decryptedString.find('#') + 1:]
-    action = decryptedString_subslice.split('|')[0]
-    voltage = decryptedString_subslice.split('|')[1]
-    current = decryptedString_subslice.split('|')[2]
-    power = decryptedString_subslice.split('|')[3]
-    cumpower = decryptedString_subslice.split('|')[4]
-    return {'action': action, 'voltage': voltage, 'current': current, 'power': power, 'cumpower': cumpower}
+    # Get the rest of the string after the first '#' character and split by '|'
+    values = decryptedString[decryptedString.find('#') + 1:].split('|')
+    return {'action': values[0], 'voltage': values[1], 'current': values[2], 'power': values[3], 'cumpower': values[4]}
 
 
 serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
