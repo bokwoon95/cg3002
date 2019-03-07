@@ -32,17 +32,20 @@ handshake_done = False
 
 def handshake():
     "Handshake Between Rasberry Pi and Arduino"
+    global handshake_done
+
     def sanitize_byte(bt):
         "converts b'1' -> b'\x01'"
-        return bytes.fromhex(bt.decode('utf-8').rjust(2,'0'))
-    while handshake_flag:
+        return bytes.fromhex(bt.decode('utf-8').rjust(2, '0'))
+
+    while True:
         time.sleep(1)
         ser.write(SYN)  # Request for handshake to start
         val = ser.read()
         if (sanitize_byte(val) == SYN_ACK):
-            handshake_flag = False
             ser.write(ACK)
             handshake_done = True
+            break
     print('Handshake completed')
 
 
@@ -60,6 +63,7 @@ def getIMUPacket():
             print(unpacked_data)
     return unpacked_data
 
+
 def getPowerPacket():
     ser.write(DATA_P)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
@@ -70,14 +74,19 @@ def getPowerPacket():
             unpacked_data = struct.unpack('<HHHH', dataBytes)
             print(unpacked_data)
 
-def getData(label, duration):
-        arr_2d = []
-        curr_time = time.time()
-        while (time.time() - curr_time < duration):
-                lst = list(getIMUPacket())
-                lst.append(label)
-                arr_2d.append(lst)
-        return arr_2d
 
-getIMUPacket()
-getPowerPacket()
+def getData(label, duration):
+    arr_2d = []
+    curr_time = time.time()
+    while (time.time() - curr_time < duration):
+        lst = list(getIMUPacket())
+        lst.append(label)
+        arr_2d.append(lst)
+    return arr_2d
+
+
+sensordata = getIMUPacket()
+powerdata = getPowerPacket()
+
+with open('data.csv', 'a') as fd:
+    csv.writer(fd).writerow(list(sensordata))
