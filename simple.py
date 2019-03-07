@@ -42,7 +42,7 @@ def handshake():
         time.sleep(1)
         ser.write(SYN)  # Request for handshake to start
         val = ser.read()
-        if (sanitize_byte(val) == SYN_ACK):
+        if sanitize_byte(val) == SYN_ACK:
             ser.write(ACK)
             handshake_done = True
             break
@@ -55,10 +55,10 @@ handshake()
 def getIMUPacket():
     ser.write(DATA_R)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
-    if (startByte == 'S'):
+    if startByte == 'S':
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
-        if (endByte == 'E'):
+        if endByte == 'E':
             unpacked_data = struct.unpack('<bHHHHHHH', dataBytes)
             print(unpacked_data)
     return unpacked_data
@@ -67,10 +67,10 @@ def getIMUPacket():
 def getPowerPacket():
     ser.write(DATA_P)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
-    if (startByte == 'S'):
+    if startByte == 'S':
         dataBytes = ser.read(POWER_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
-        if (endByte == 'E'):
+        if endByte == 'E':
             unpacked_data = struct.unpack('<HHHH', dataBytes)
             print(unpacked_data)
 
@@ -78,7 +78,7 @@ def getPowerPacket():
 def getData(label, duration):
     arr_2d = []
     curr_time = time.time()
-    while (time.time() - curr_time < duration):
+    while time.time() - curr_time < duration:
         lst = list(getIMUPacket())
         lst.append(label)
         arr_2d.append(lst)
