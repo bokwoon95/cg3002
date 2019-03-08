@@ -23,7 +23,8 @@ struct __attribute__ ((packed)) power_data {
     int16_t checksum;
 }; 
 
-SemaphoreHandle_t xSemaphore = NULL;
+SemaphoreHandle_t xSemaphore_IMU = NULL;
+SemaphoreHandle_t xSemaphore_power = NULL;
 
 // instantiate one struct
 struct IMU_data data;
@@ -35,13 +36,13 @@ int power_data_len = sizeof(power_data);
 
 // send the structure giving the IMU state through serial
 void send_IMU_struct() {
+    Serial.println("Sending Sensor Data");
     Serial.println("Sending: S");
     Serial1.write('S');
     Serial.println("Sending: E");
     Serial1.write((uint8_t *)&data, IMU_data_len);
     Serial1.write('E');
     return;
-
 }
 
 // send the structure giving the IMU state through serial
@@ -69,21 +70,22 @@ byte DATA_P = 4;
 void retrieveSensorData(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = 16;
-
+    
     for(;;) {
-        if( xSemaphore != NULL ){
+        Serial.println("Retrieving Sensor Data, 0");
+        if( xSemaphore_IMU != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
-            if( xSemaphoreTake( xSemaphore, ( TickType_t ) 10 ) == pdTRUE )
+            if( xSemaphoreTake( xSemaphore_IMU, ( TickType_t ) 10 ) == pdTRUE )
             {
                 /* We were able to obtain the semaphore and can now access the
                    shared resource. */
-
+                Serial.println("Retrieving Sensor Data");
                 /* ... */
 
                 /* We have finished accessing the shared resource.  Release the
                    semaphore. */
-                xSemaphoreGive( xSemaphore );
+                xSemaphoreGive( xSemaphore_IMU );
             }
             else
             {
@@ -105,19 +107,20 @@ void retrievePowerData(void *p){
     const TickType_t xFrequency = 128;
 
     for(;;){
-        if( xSemaphore != NULL ){
+        Serial.println("Retrieving Power Data, 0");
+        if( xSemaphore_power != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
-            if( xSemaphoreTake( xSemaphore, ( TickType_t ) 10 ) == pdTRUE )
+            if( xSemaphoreTake( xSemaphore_power, ( TickType_t ) 10 ) == pdTRUE )
             {
                 /* We were able to obtain the semaphore and can now access the
                    shared resource. */
-
+                Serial.println("Retrieving Power Data, 1");
                 /* ... */
 
                 /* We have finished accessing the shared resource.  Release the
                    semaphore. */
-                xSemaphoreGive( xSemaphore );
+                xSemaphoreGive( xSemaphore_power );
             }
             else
             {
@@ -133,13 +136,10 @@ void retrievePowerData(void *p){
 
 int response = 0;
 
-void handle_handshake(int skip) {
+void handle_handshake() {
 
     while (handshake_flag == 0) {
-        if (skip) { // we already received SYN
-            Serial1.print(SYN-ACK);
-            skip = 0;
-        } else if (Serial1.available()) {
+        if (Serial1.available()) {
             response = Serial1.read();    // From RPI to arduino   
             if (response == SYN) { // raspberry pi wants to perform handshake
                 //        Serial.println("Sending SYN_ACK");
@@ -166,22 +166,37 @@ void handleInput(void *p){
             if (input == SYN) {      // RPI is trying to initiate handshake
                 Serial.println("RPI input: handshake");
                 handshake_flag = 0;
-                handle_handshake(1);
+                handle_handshake();
             } else if (input == DATA_R) { // RPI is requesting data
                 Serial.println("RPI input: IMU data request");
                 if (handshake_flag) { 
                     Serial.println("Begin sending data");
-                    send_IMU_struct();
-                } else {
-                  //TODO
+                    if( xSemaphore_IMU != NULL ){
+                        /* See if we can obtain the semaphore.  If the semaphore is not
+                           available wait 10 ticks to see if it becomes free. */
+                        if( xSemaphoreTake( xSemaphore_IMU, ( TickType_t ) 10 ) == pdTRUE )
+                        {
+                            /* We were able to obtain the semaphore and can now access the
+                               shared resource. */
+                
+                            /* ... */
+                            send_IMU_struct();
+                            /* We have finished accessing the shared resource.  Release the
+                               semaphore. */
+                            xSemaphoreGive( xSemaphore_IMU );
+                        }
+                        else
+                        {
+                            /* We could not obtain the semaphore and can therefore not access
+                               the shared resource safely. */
+                        }
+                    }
                 }
             } else if (input == DATA_P) {
                 Serial.println("RPI input: power data request");
                 if (handshake_flag) { 
                     Serial.println("Begin sending data");
                     send_power_struct();
-                } else {
-                  //TODO
                 }
             }
         }
@@ -218,14 +233,16 @@ void setup() {
     p_data.power   = 10;
     p_data.checksum = 11;
 
-    xSemaphore = xSemaphoreCreateBinary();
+    xSemaphore_IMU = xSemaphoreCreateBinary();
+    xSemaphore_power = xSemaphoreCreateBinary();
 
-    xSemaphoreGive(xSemaphore);
+    xSemaphoreGive(xSemaphore_IMU);
+    xSemaphoreGive(xSemaphore_power);
 
     // Create Tasks
-    xTaskCreate(handleInput, "handleInput", STACK_DEPTH, (void *) NULL, 0, NULL);
-    //  xTaskCreate(retrievePowerData, "retrievePowerData", STACK_DEPTH, (void *) NULL, 1, NULL);
-    //  xTaskCreate(retrieveSensorData, "retrieveSensorData", STACK_DEPTH, (void *) NULL, 1, NULL);
+    xTaskCreate(handleInput, "handleInput", STACK_DEPTH, (void *) NULL, 1, NULL);
+    xTaskCreate(retrievePowerData, "retrievePowerData", STACK_DEPTH, (void *) NULL, 1, NULL);
+    xTaskCreate(retrieveSensorData, "retrieveSensorData", STACK_DEPTH, (void *) NULL, 1, NULL);
 
     vTaskStartScheduler();
 
