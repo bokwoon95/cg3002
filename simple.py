@@ -60,7 +60,7 @@ def getIMUPacket():
         endByte = ser.read().decode("utf-8")
         if endByte == 'E':
             unpacked_data = struct.unpack('<bHHHHHHH', dataBytes)
-            print(unpacked_data)
+            # print(unpacked_data)
     return unpacked_data
 
 
@@ -72,7 +72,8 @@ def getPowerPacket():
         endByte = ser.read().decode("utf-8")
         if endByte == 'E':
             unpacked_data = struct.unpack('<HHHH', dataBytes)
-            print(unpacked_data)
+            # print(unpacked_data)
+    return unpacked_data
 
 
 def getData(label, duration):
@@ -84,9 +85,11 @@ def getData(label, duration):
         arr_2d.append(lst)
     return arr_2d
 
-
 sensordata = getIMUPacket()
-powerdata = getPowerPacket()
+powerdata  = getPowerPacket()
+
+print("Sensor data: " + str(sensordata))
+print("Power data: " + str(powerdata))
 
 with open('data.csv', 'a') as fd:
     csv.writer(fd).writerow(list(sensordata))
