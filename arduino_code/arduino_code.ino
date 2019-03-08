@@ -196,7 +196,26 @@ void handleInput(void *p){
                 Serial.println("RPI input: power data request");
                 if (handshake_flag) { 
                     Serial.println("Begin sending data");
-                    send_power_struct();
+                    if( xSemaphore_power != NULL ){
+                        /* See if we can obtain the semaphore.  If the semaphore is not
+                           available wait 10 ticks to see if it becomes free. */
+                        if( xSemaphoreTake( xSemaphore_power, ( TickType_t ) 10 ) == pdTRUE )
+                        {
+                            /* We were able to obtain the semaphore and can now access the
+                               shared resource. */
+                
+                            /* ... */
+                            send_power_struct();
+                            /* We have finished accessing the shared resource.  Release the
+                               semaphore. */
+                            xSemaphoreGive( xSemaphore_power );
+                        }
+                        else
+                        {
+                            /* We could not obtain the semaphore and can therefore not access
+                               the shared resource safely. */
+                        }
+                    }
                 }
             }
         }
@@ -219,13 +238,13 @@ void setup() {
     Serial.println(F("done with setup"));
 
     // Initialize dummy data
+    data.Device_ID = 0;
     data.AcX = 1;
     data.AcY = 2;
     data.AcZ = 3;
     data.GyX = 4;
     data.GyY = 5;
     data.GyZ = 6;
-    data.Device_ID = 0;
     data.checksum = 7;
 
     p_data.voltage = 8;
