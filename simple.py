@@ -5,7 +5,7 @@ import csv
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
-IMU_PACKET_SIZE = 15
+IMU_PACKET_SIZE = 38
 POWER_PACKET_SIZE = 8
 
 ser = serial.Serial(
@@ -53,18 +53,20 @@ handshake()
 
 
 def getIMUPacket():
+    unpacked_data = None
     ser.write(DATA_R)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
     if startByte == 'S':
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
         if endByte == 'E':
-            unpacked_data = struct.unpack('<bHHHHHHH', dataBytes)
+            unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhh', dataBytes)
             # print(unpacked_data)
     return unpacked_data
 
 
 def getPowerPacket():
+    unpacked_data = None
     ser.write(DATA_P)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
     if startByte == 'S':
@@ -91,5 +93,5 @@ powerdata  = getPowerPacket()
 print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
-with open('data.csv', 'a') as fd:
-    csv.writer(fd).writerow(list(sensordata))
+#with open('data.csv', 'a') as fd:
+#    csv.writer(fd).writerow(list(sensordata))
