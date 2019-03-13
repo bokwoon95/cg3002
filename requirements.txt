@@ -2,3 +2,5 @@ pyserial
 pycrypto
 numpy
 pandas
+joblib
+sklearn

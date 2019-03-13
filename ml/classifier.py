@@ -8,4 +8,10 @@ class Classifier:
         return self.clf.predict(Xs)
 
     def predict_once(self, X):
-        return self.clf.predict([X])[0]
+        result = self.clf.predict([X])[0]
+        print(result)
+        return result
+
+if __name__ == "__main__":
+    clf = new Classifier("../models/random_forest.pkl")
+    clf.predict_once()
