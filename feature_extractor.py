@@ -43,7 +43,7 @@ class FeatureExtractor:
         # loop through all moves
         ret = []
         for move in self.moves:
-            curr = slide(100, 20, data.loc[move], move)
+            curr = slide(90, 45, data.loc[move], move)
             ret += curr
         return ret
 
