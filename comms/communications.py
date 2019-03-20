@@ -3,7 +3,7 @@ import struct
 import time
 import csv
 
-IMU_PACKET_SIZE = 38
+IMU_PACKET_SIZE = 40
 POWER_PACKET_SIZE = 8
 
 # Hand Shake
@@ -50,9 +50,9 @@ class Communicate:
         startByte = self.serial.read().decode("utf-8")
         if startByte == 'S':
             dataBytes = self.serial.read(IMU_PACKET_SIZE)
-            endByte = self.serial.read().decode("utf-8")
+            endByte = self.serial.read().decode('utf-8')
             if endByte == 'E':
-                unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhh', dataBytes)
+                unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
         return unpacked_data
 
@@ -73,6 +73,7 @@ class Communicate:
         window_data = []
         curr_time = time.time()
         while time.time() - curr_time < duration:
+            print(self.getIMUPacket())
             window_data.append(self.getIMUPacket())
         return window_data
         

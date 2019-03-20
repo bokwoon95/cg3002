@@ -13,11 +13,12 @@ def save_training_data(file_name, data, label, reset=False):
         with open(file_name, 'w') as csvFile:
             writer = csv.writer(csvFile)
             for d in data:
+                d= list(d)
                 d.insert(0,label)
                 writer.writerow(d)
+        csvFile.close()
     else:
         print('ERROR, File already exists')
-    csvFile.close()
 
 
 def get_training_data(file_path, columns):
@@ -40,7 +41,7 @@ def main():
         if comm.has_handshake():
             filename = input("Enter the filename: ")
             filename = filename + '.csv'
-            label = int(input("Enter the label: "))
+            label = input("Enter the label: ")
             raw_data = comm.getData(duration=10)
             save_training_data(filename, raw_data, label)
             print('Collection complete')
