@@ -9,16 +9,23 @@ def save_training_data(file_name, data, label, reset=False):
     if reset:
         os.remove(file_name)
     file_exists = os.path.isfile(file_name)
-    if not file_exists:
-        with open(file_name, 'w') as csvFile:
-            writer = csv.writer(csvFile)
-            for d in data:
-                d= list(d)
-                d.insert(0,label)
-                writer.writerow(d)
-        csvFile.close()
-    else:
-        print('ERROR, File already exists')
+    #if not file_exists:
+    #    with open(file_name, 'w') as csvFile:
+    #        writer = csv.writer(csvFile)
+    #        for d in data:
+    #            d= list(d)
+    #            d.insert(0,label)
+    #            writer.writerow(d)
+    #    csvFile.close()
+    #else:
+    #    print('ERROR, File already exists')
+    with open(file_name, 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        for d in data:
+            d= list(d)
+            d.insert(0,label)
+            writer.writerow(d)
+    csvFile.close()
 
 
 def get_training_data(file_path, columns):
@@ -40,7 +47,8 @@ def main():
     while True:
         if comm.has_handshake():
             filename = input("Enter the filename: ")
-            filename = filename + '.csv'
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', filename + '.csv')
+            #filename = 'data/' + filename + '.csv'
             label = input("Enter the label: ")
             raw_data = comm.getData(duration=10)
             save_training_data(filename, raw_data, label)

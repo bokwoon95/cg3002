@@ -1,6 +1,7 @@
 venv
 __pycache__
 log*.csv
+**/*.csv
 **/*.swp
 **/data.csv
 **/training.csv
