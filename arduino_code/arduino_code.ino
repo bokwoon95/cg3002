@@ -1,6 +1,7 @@
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
 #include <CircularBuffer.h>
+#include <CRC32.h>
 #include <Wire.h>
 
 #define STACK_DEPTH 128
@@ -25,7 +26,7 @@ struct __attribute__ ((packed)) IMU_data {
     int16_t Gy3X;
     int16_t Gy3Y;
     int16_t Gy3Z;
-    int16_t checksum;
+    uint32_t checksum;
 }; 
 
 struct __attribute__ ((packed)) power_data {
@@ -50,23 +51,27 @@ int16_t gyro_x, gyro_y, gyro_z;                             // variables for gyr
 int16_t temperature;                                      // variables for temperature data
 
 // instantiate one struct
-struct IMU_data data;
-struct power_data p_data;
+IMU_data data;
+IMU_data* data_ptr = &data;
+power_data p_data;
 
 // length of the structures
 int IMU_data_len = sizeof(IMU_data);
 int power_data_len = sizeof(power_data);
 
+// instantiate buffer
+uint8_t byteBuffer[36];
+
 // send the structure giving the IMU state through serial
 void send_IMU_struct() {
-    Serial.println("Sending Sensor Data");
-    Serial.println("Sending: S");
+//    Serial.println("Sending Sensor Data");
+//    Serial.println("Sending: S");
     Serial1.write('S');
-    Serial.println("Sending: E");
+//    Serial.println("Sending: E");
     if (!IMU_data_buffer.isEmpty()) {
       data = IMU_data_buffer.shift();
     } else {
-      Serial.println("No data found, sending old values.");
+//      Serial.println("No data found, sending old values.");
     }
     Serial1.write((uint8_t *)&data, IMU_data_len);
     Serial1.write('E');
@@ -97,11 +102,11 @@ byte DATA_P = 4;
  */
 void retrieveSensorData(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 16;
+    const TickType_t xFrequency = 32;
     
     for(;;) {
-        Serial.println("Retrieving Sensor Data, 0");
-        delay(300);
+//        Serial.println("Retrieving Sensor Data, 0");
+        delay(100);
         if( xSemaphore_IMU != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
@@ -115,13 +120,24 @@ void retrieveSensorData(void *p){
                   getData(1, &data);
                   getData(2, &data);
                   getData(3, &data);
+
+                  size_t buffer_length = sizeof(byteBuffer);
+
+                  char* data_bytes = (char*) data_ptr;
+                  
+                  for( size_t i = 0; i < buffer_length; i++ ) {
+                    byteBuffer[i] = data_bytes[i];
+                  }
+                
+                  data.checksum = CRC32::calculate(byteBuffer, 36);
+
                   IMU_data_buffer.push(data);
                 }
 
                 int buffer_size = IMU_data_buffer.size();
 
 //                Serial.print("Number of elements: ");
-                Serial.println(buffer_size);
+//                Serial.println(buffer_size);
 
                 /* We have finished accessing the shared resource.  Release the
                    semaphore. */
@@ -144,11 +160,11 @@ void retrieveSensorData(void *p){
  */
 void retrievePowerData(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 16;
+    const TickType_t xFrequency = 32;
 
     for(;;){
-        Serial.println("Retrieving Power Data");
-        delay(300);
+//        Serial.println("Retrieving Power Data");
+        delay(100);
         if( xSemaphore_power != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
@@ -200,11 +216,11 @@ void handle_handshake() {
  */
 void handleInput(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 16;
+    const TickType_t xFrequency = 32;
     int input;
     for(;;){
-        Serial.println("Handling input");
-        delay(300);
+//        Serial.println("Handling input");
+//        delay(300);
         if (Serial1.available()) { // if is an available byte..
             input = Serial1.read();  // read it
             if (input == SYN) {      // RPI is trying to initiate handshake
@@ -367,23 +383,23 @@ void setup() {
 
     // Initialize dummy data
     data.Ac1X = 1;
-    data.Ac1Y = 1;
-    data.Ac1Z = 1;
-    data.Gy1X = 1;
-    data.Gy1Y = 1;
-    data.Gy1Z = 1;
-    data.Ac2X = 1;
-    data.Ac2Y = 1;
-    data.Ac2Z = 1;
-    data.Gy2X = 1;
-    data.Gy2Y = 1;
-    data.Gy2Z = 1;
-    data.Ac3X = 1;
-    data.Ac3Y = 1;
-    data.Ac3Z = 1;
-    data.Gy3X = 1;
-    data.Gy3Y = 1;
-    data.Gy3Z = 1;
+    data.Ac1Y = 2;
+    data.Ac1Z = 3;
+    data.Gy1X = 4;
+    data.Gy1Y = 5;
+    data.Gy1Z = 6;
+    data.Ac2X = 7;
+    data.Ac2Y = 8;
+    data.Ac2Z = 9;
+    data.Gy2X = 10;
+    data.Gy2Y = 11;
+    data.Gy2Z = 12;
+    data.Ac3X = 13;
+    data.Ac3Y = 14;
+    data.Ac3Z = 15;
+    data.Gy3X = 16;
+    data.Gy3Y = 17;
+    data.Gy3Z = 18;
     data.checksum = 7;
 
     p_data.voltage = 8;
@@ -403,8 +419,6 @@ void setup() {
     xTaskCreate(retrieveSensorData, "retrieveSensorData", STACK_DEPTH, (void *) NULL, 1, NULL);
 
     vTaskStartScheduler();
-
-
 }
 
 void loop() {
