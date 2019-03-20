@@ -13,5 +13,5 @@ class Classifier:
         return result
 
 if __name__ == "__main__":
-    clf = new Classifier("../models/random_forest.pkl")
+    clf = Classifier("../models/random_forest.pkl")
     clf.predict_once()
