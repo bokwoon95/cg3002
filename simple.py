@@ -5,7 +5,7 @@ import csv
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
-IMU_PACKET_SIZE = 38
+IMU_PACKET_SIZE = 40
 POWER_PACKET_SIZE = 8
 
 ser = serial.Serial(
@@ -60,7 +60,7 @@ def getIMUPacket():
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
         if endByte == 'E':
-            unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhh', dataBytes)
+            unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
     return unpacked_data
 
@@ -79,12 +79,16 @@ def getPowerPacket():
 
 
 def getData(label, duration):
+    print("Collecting data for move %s for %d seconds" % (label, duration))
     arr_2d = []
     curr_time = time.time()
     while time.time() - curr_time < duration:
         lst = list(getIMUPacket())
-        lst.append(label)
+        lst.insert(0, label)
+        lst.pop(len(lst) - 1)
         arr_2d.append(lst)
+    with open('training.csv', 'a') as fd:
+        csv.writer(fd).writerows(arr_2d)
     return arr_2d
 
 sensordata = getIMUPacket()
@@ -93,5 +97,8 @@ powerdata  = getPowerPacket()
 print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
-#with open('data.csv', 'a') as fd:
-#    csv.writer(fd).writerow(list(sensordata))
+
+getData("Chicken", 10)
+
+with open('data.csv', 'a') as fd:
+    csv.writer(fd).writerow(list(sensordata))
