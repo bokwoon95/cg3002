@@ -1,4 +1,8 @@
 import serial
+from Crypto.Cipher import AES
+from Crypto import Random
+import base64
+import socket
 import struct
 import time
 import csv
@@ -76,4 +80,30 @@ class Communicate:
             print(self.getIMUPacket())
             window_data.append(self.getIMUPacket())
         return window_data
-        
+
+    def encryptText(self, dictt, secret_key):
+        def pad(s):
+            "pads string to a multiple of 16 chars"
+            return s.rjust(len(s) + 16 - len(s) % 16, "0")
+        strarray = list(map(str, dictt.values()))
+        payload = pad("#" + "|".join(strarray) + "|")
+        # Generate random 16 byte initialization vector
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
+        return base64.b64encode(iv + cipher.encrypt(payload))
+
+    def sendData(self, ip_addr, port_num, groupID, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):
+        """ Send data to the server """
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((ip_addr, port_num))
+        dictionary = {
+            'action': action, 
+            'voltage': voltage,
+            'current': current,
+            'power': power,
+            'cumpower': cumpower
+        }
+        encrypted_msg = self.encryptText(dictionary, secret_key)
+        time.sleep(60)
+        client.send(encrypted_msg)
+        client.close()
