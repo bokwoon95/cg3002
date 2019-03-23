@@ -27,6 +27,7 @@ SYN = b'\x01'
 SYN_ACK = b'\x02'
 DATA_R = b'\x03'
 DATA_P = b'\x04'
+EMPTY = b'\x05'
 
 handshake_done = False
 
@@ -58,15 +59,18 @@ handshake()
 def getIMUPacket():
     unpacked_data = None
     ser.write(DATA_R)  # Request for arduino to send data over
-    startByte = ser.read().decode("utf-8")
-    #print("START BYTE IS: {}".format(startByte))
+    rawData = ser.read() 
+    if (rawData == EMPTY):
+        print("Empty Buffer")
+        return None
+    startByte = rawData.decode("utf-8")
     if startByte == 'S':
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
-        #print("END BYTE IS: {}".format(endByte))
         if endByte == 'E':
             unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
+            #import pdb; pdb.set_trace()
     return unpacked_data
 
 
@@ -84,15 +88,27 @@ def getPowerPacket():
 
 
 def getData(label, duration):
+    dataCount = 0
+    errCount = 0
     print("Collecting data for move %s for %d seconds" % (label, duration))
     arr_2d = []
     curr_time = time.time()
     while time.time() - curr_time < duration:
-        lst = list(getIMUPacket())
-        lst.insert(0, label)
-        lst.pop(len(lst) - 1)
-        arr_2d.append(lst)
-        #time.sleep(5 / 1000)
+        packet = getIMUPacket()
+        print(packet)
+        if packet is not None:
+            lst = list(packet)
+            lst.insert(0, label)
+            lst.pop(len(lst) - 1)
+            arr_2d.append(lst)
+            #time.sleep(5 / 1000)
+        else:
+            errCount += 1
+        
+        dataCount += 1
+        #with open('training.csv', 'a') as fd:
+        #    csv.writer(fd).writerows(arr_2d)
+    print("Err/Data: %d/%d" % (errCount, dataCount))
     return arr_2d
 
 sensordata = getIMUPacket()
@@ -104,6 +120,6 @@ print("Power data: " + str(powerdata))
 
 sensordata = getData("Chicken", 10)
 
-with open('output.csv', 'w') as fd:
+with open('data.csv', 'a') as fd:
     sensordata = ("no data") if sensordata is None else sensordata
     csv.writer(fd).writerows(sensordata)
