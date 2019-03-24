@@ -118,7 +118,7 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 
-sensordata = getData("Chicken", 10)
+sensordata = getData("Doublepump", 10)
 
 with open('data.csv', 'a') as fd:
     sensordata = ("no data") if sensordata is None else sensordata
