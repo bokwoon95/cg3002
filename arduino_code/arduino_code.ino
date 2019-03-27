@@ -5,7 +5,7 @@
 #include <Wire.h>
 
 #define STACK_DEPTH 128
-
+#define PERIOD 8
 // https://arduino.stackexchange.com/questions/9899/serial-structure-data-transfer-between-an-arduino-and-a-linux-pc
 struct __attribute__ ((packed)) IMU_data {
     int16_t Ac1X;          
@@ -62,19 +62,31 @@ int power_data_len = sizeof(power_data);
 // instantiate buffer
 uint8_t byteBuffer[36];
 
+int handshake_flag = 0;
+
+byte ACK = 0;
+byte SYN = 1;
+byte SYN_ACK = 2;
+byte DATA_R = 3;
+byte DATA_P = 4;
+byte EMPTY = 5;
+
 // send the structure giving the IMU state through serial
 void send_IMU_struct() {
 //    Serial.println("Sending Sensor Data");
 //    Serial.println("Sending: S");
-    Serial1.write('S');
+ 
 //    Serial.println("Sending: E");
     if (!IMU_data_buffer.isEmpty()) {
       data = IMU_data_buffer.shift();
+      Serial1.write('S');
+      Serial1.write((uint8_t *)&data, IMU_data_len);
+      Serial1.write('E');
     } else {
 //      Serial.println("No data found, sending old values.");
+      Serial1.write(EMPTY);
     }
-    Serial1.write((uint8_t *)&data, IMU_data_len);
-    Serial1.write('E');
+
     return;
 }
 
@@ -89,24 +101,14 @@ void send_power_struct() {
 
 }
 
-int handshake_flag = 0;
-
-byte ACK = 0;
-byte SYN = 1;
-byte SYN_ACK = 2;
-byte DATA_R = 3;
-byte DATA_P = 4;
-
 /**
  * Retrieve data from sensors
  */
 void retrieveSensorData(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 32;
-    
+    const TickType_t xFrequency = PERIOD;
+     
     for(;;) {
-//        Serial.println("Retrieving Sensor Data, 0");
-        delay(100);
         if( xSemaphore_IMU != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
@@ -114,30 +116,25 @@ void retrieveSensorData(void *p){
             {
                 /* We were able to obtain the semaphore and can now access the
                    shared resource. */
-//                Serial.println("Retrieving Sensor Data");
+
                 /* ... */
-                if (!IMU_data_buffer.isFull()) {
-                  getData(1, &data);
-                  getData(2, &data);
-                  getData(3, &data);
+                getData(1, &data);
+                getData(2, &data);
+                getData(3, &data);
 
-                  size_t buffer_length = sizeof(byteBuffer);
+                size_t buffer_length = sizeof(byteBuffer);
 
-                  char* data_bytes = (char*) data_ptr;
-                  
-                  for( size_t i = 0; i < buffer_length; i++ ) {
-                    byteBuffer[i] = data_bytes[i];
-                  }
+                char* data_bytes = (char*) data_ptr;
                 
-                  data.checksum = CRC32::calculate(byteBuffer, 36);
-
-                  IMU_data_buffer.push(data);
+                for( size_t i = 0; i < buffer_length; i++ ) {
+                  byteBuffer[i] = data_bytes[i];
                 }
+              
+//                  data.checksum = CRC32::calculate(byteBuffer, 36);
 
-                int buffer_size = IMU_data_buffer.size();
+                IMU_data_buffer.push(data);
 
-//                Serial.print("Number of elements: ");
-//                Serial.println(buffer_size);
+//                int buffer_size = IMU_data_buffer.size();
 
                 /* We have finished accessing the shared resource.  Release the
                    semaphore. */
@@ -149,9 +146,11 @@ void retrieveSensorData(void *p){
                    the shared resource safely. */
             }
         }
+        
+        vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
     }
 
-    vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
+    
 
 }
 
@@ -160,11 +159,10 @@ void retrieveSensorData(void *p){
  */
 void retrievePowerData(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 32;
+    const TickType_t xFrequency = PERIOD * 4;
 
     for(;;){
-//        Serial.println("Retrieving Power Data");
-        delay(100);
+//        delay(DELAY_AMT);
         if( xSemaphore_power != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
@@ -185,9 +183,11 @@ void retrievePowerData(void *p){
                    the shared resource safely. */
             }
         }
+
+        vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
     }
 
-    vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
+    
 
 }
 
@@ -216,11 +216,9 @@ void handle_handshake() {
  */
 void handleInput(void *p){
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = 32;
+    const TickType_t xFrequency = PERIOD / 8;
     int input;
     for(;;){
-//        Serial.println("Handling input");
-//        delay(300);
         if (Serial1.available()) { // if is an available byte..
             input = Serial1.read();  // read it
             if (input == SYN) {      // RPI is trying to initiate handshake
@@ -228,9 +226,7 @@ void handleInput(void *p){
                 handshake_flag = 0;
                 handle_handshake();
             } else if (input == DATA_R) { // RPI is requesting data
-                Serial.println("RPI input: IMU data request");
                 if (handshake_flag) { 
-                    Serial.println("Begin sending data");
                     if( xSemaphore_IMU != NULL ){
                         /* See if we can obtain the semaphore.  If the semaphore is not
                            available wait 10 ticks to see if it becomes free. */
@@ -279,9 +275,11 @@ void handleInput(void *p){
                 }
             }
         }
+
+        vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
     }
 
-    vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
+    
 
 }
 
@@ -306,7 +304,6 @@ void getData(int sensorNum, IMU_data* data){
     Wire.write(0x3B);                                       // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
     Wire.endTransmission(false);                            // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
     Wire.requestFrom(MPU_ADDR, 6, true);                    // request a total of 6 registers
-    
                                                             // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
     accelerometer_x = Wire.read()<<8 | Wire.read();         // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
     accelerometer_y = Wire.read()<<8 | Wire.read();         // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
@@ -320,18 +317,6 @@ void getData(int sensorNum, IMU_data* data){
     gyro_x = Wire.read()<<8 | Wire.read();                  // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
     gyro_y = Wire.read()<<8 | Wire.read();                  // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
     gyro_z = Wire.read()<<8 | Wire.read();                  // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
-    
-    // print out data
-//    Serial.print(" Sensor "); Serial.print(sensorNum);
-//    Serial.print(" | aX = "); Serial.print(accelerometer_x/16384.0);
-//    Serial.print(" | aY = "); Serial.print(accelerometer_y/16384.0);
-//    Serial.print(" | aZ = "); Serial.print(accelerometer_z/16384.0);
-//    Serial.print(" | gX = "); Serial.print(gyro_x/131);
-//    Serial.print(" | gY = "); Serial.print(gyro_y/131);
-//    Serial.print(" | gZ = "); Serial.print(gyro_z/131);
-//    Serial.println();
-  
-//    delay(500);
     
     if(sensorNum == 1) {
         data->Ac1X = accelerometer_x;
