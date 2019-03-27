@@ -5,3 +5,4 @@ log*.csv
 **/*.swp
 **/data.csv
 **/training.csv
+**/*.csv

@@ -2,6 +2,7 @@ import serial
 import struct
 import time
 import csv
+import binascii
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
@@ -34,6 +35,8 @@ def handshake():
     "Handshake Between Rasberry Pi and Arduino"
     global handshake_done
 
+    print('Handshake started')
+
     def sanitize_byte(bt):
         "converts b'1' -> b'\x01'"
         return bytes.fromhex(bt.decode('utf-8').rjust(2, '0'))
@@ -56,9 +59,11 @@ def getIMUPacket():
     unpacked_data = None
     ser.write(DATA_R)  # Request for arduino to send data over
     startByte = ser.read().decode("utf-8")
+    #print("START BYTE IS: {}".format(startByte))
     if startByte == 'S':
         dataBytes = ser.read(IMU_PACKET_SIZE)
         endByte = ser.read().decode("utf-8")
+        #print("END BYTE IS: {}".format(endByte))
         if endByte == 'E':
             unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
@@ -87,8 +92,7 @@ def getData(label, duration):
         lst.insert(0, label)
         lst.pop(len(lst) - 1)
         arr_2d.append(lst)
-    with open('training.csv', 'a') as fd:
-        csv.writer(fd).writerows(arr_2d)
+        #time.sleep(5 / 1000)
     return arr_2d
 
 sensordata = getIMUPacket()
@@ -98,7 +102,8 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 
-getData("Chicken", 10)
+sensordata = getData("Chicken", 10)
 
-with open('data.csv', 'a') as fd:
-    csv.writer(fd).writerow(list(sensordata))
+with open('output.csv', 'w') as fd:
+    sensordata = ("no data") if sensordata is None else sensordata
+    csv.writer(fd).writerows(sensordata)
