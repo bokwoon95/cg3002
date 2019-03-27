@@ -33,7 +33,10 @@ for prefix in feature_prefix:
     for x in x_columns:
         headers.append(prefix + x)
 
+print("headers passed to loader are:")
 print(headers)
+print("headers passed to featureEx are: ")
+print(columns1)
 y_column = "move"
 
 trainer1 = RandomForestTrainer(30,14)

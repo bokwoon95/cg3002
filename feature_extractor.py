@@ -12,8 +12,9 @@ class FeatureExtractor:
         features = self.extract(csv_path)
 
         x = pd.DataFrame(features)
-
-        print(x)
+        
+        print("feature dataframe dimension is: ")
+        print(x.shape)
         output_csv_path = os.path.join(self.input_dir_path, 'out.csv')
         self.save(x, output_csv_path)
 
@@ -22,13 +23,15 @@ class FeatureExtractor:
         features = self.extract2(csv_path)
 
         x = pd.DataFrame(features)
-        print(x)
+        print("feature dataframe dimension is: ")
+        print(x.shape)
         output_csv_path = os.path.join(self.input_dir_path, 'out.csv')
         self.save(x, output_csv_path)
 
     def extract2(self, input_file_path):
         def slide(size, step, data):
             attributes = self.column_names.copy()
+            #discount first item in header
             attributes.pop(0)
             ls = []
             num_rows = data.shape[0]
