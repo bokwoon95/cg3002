@@ -27,8 +27,8 @@ class Communicate:
                 bytesize=serial.EIGHTBITS,
                 timeout=1
             )
-        # self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.client.connect((ip_addr, port_num))
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.connect((ip_addr, port_num))
         self.handshake_done = False
 
     def get_handshake(self):
