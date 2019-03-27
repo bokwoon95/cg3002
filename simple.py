@@ -11,7 +11,7 @@ POWER_PACKET_SIZE = 8
 
 ser = serial.Serial(
     port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-    baudrate=115200,
+    baudrate=38400,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,

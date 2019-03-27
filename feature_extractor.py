@@ -18,7 +18,7 @@ class FeatureExtractor:
         self.save(x, output_csv_path)
 
     def top2(self):
-        csv_path = os.path.join(self.input_dir_path, 'in_merge.csv')
+        csv_path = os.path.join(self.input_dir_path, 'in.csv')
         features = self.extract2(csv_path)
 
         x = pd.DataFrame(features)
@@ -51,7 +51,7 @@ class FeatureExtractor:
             return ls
 
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-        return slide(200, 100, data)
+        return slide(150, 75, data)
 
     # returns a list of dicts, each dict being a labeled feature vector
     def extract(self, input_file_path):
@@ -75,7 +75,7 @@ class FeatureExtractor:
 
         # assume input csv has row labels but no column labels
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-
+        print(data)
         # loop through all moves
         ret = []
         for move in self.moves:
