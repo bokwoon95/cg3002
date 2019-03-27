@@ -12,7 +12,7 @@ FILE_PATH = "/home/pi/cg3002/models/rf.pkl"
 
 CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
             'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
-            'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z',
+            'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z', 'checksum'
 ]
 def get_feature_vector(raw_data):
     feat_vect = []
@@ -45,8 +45,11 @@ def main():
     while True:
         if comm.has_handshake():
             # Get data from IMU
-            raw_data = comm.getData(duration=2)
-            raw_data = [list(x) for x in raw_data]
+            raw_data = comm.getData(duration=5)
+            if raw_data == None:
+                print("Comms Error: None Type")
+                break
+            raw_data = [list(raw_data[i]) for i in range(200)]
             # Process data
             feature_vector = get_feature_vector(raw_data)
             # Check if MOVE is idle (TO BE IMPLEMENTED)
