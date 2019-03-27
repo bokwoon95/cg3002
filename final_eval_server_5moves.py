@@ -23,6 +23,7 @@ class Server(threading.Thread):
         self.auth = server_auth()
         # Create a TCP/IP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # Bind the socket to the port
         server_address = (ip_addr, port_num)
         print('starting up on %s port %s' % server_address, file=sys.stderr)
