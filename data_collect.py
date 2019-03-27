@@ -9,6 +9,8 @@ def save_training_data(file_name, data, label, reset=False):
     if reset:
         os.remove(file_name)
     file_exists = os.path.isfile(file_name)
+    if file_exists:
+        print('ERROR, FILE ALREADY EXISTS')
     #if not file_exists:
     #    with open(file_name, 'w') as csvFile:
     #        writer = csv.writer(csvFile)
