@@ -21,7 +21,7 @@ class RandomForestTrainer:
         return score
 
     def cv(self, X, y):
-        scores = ms.cross_val_score(self.clf, X, y, cv=1000)
+        scores = ms.cross_val_score(self.clf, X, y, cv=30)
         print("cross val score: %f" % scores.mean())
 
     def save(self, model_path):
