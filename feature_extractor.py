@@ -54,7 +54,7 @@ class FeatureExtractor:
             return ls
 
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-        return slide(150, 75, data)
+        return slide(90, 45, data)
 
     # returns a list of dicts, each dict being a labeled feature vector
     def extract(self, input_file_path):
@@ -82,7 +82,7 @@ class FeatureExtractor:
         # loop through all moves
         ret = []
         for move in self.moves:
-            curr = slide(200, 100, data.loc[move], move)
+            curr = slide(90, 45, data.loc[move], move)
             ret += curr
         return ret
 

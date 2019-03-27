@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from comms.communications import Communicate
+import sys
 
 def save_training_data(file_name, data, label, reset=False):
     if reset:
@@ -44,7 +45,12 @@ def get_training_data(file_path, columns):
 
 
 def main():
-    comm = Communicate()
+    if len(sys.argv) != 2:
+        print('Invalid number of arguments')
+        print('python3 data_collect.py [IP address]')
+        sys.exit()
+    IP_ADDR = sys.argv[1]
+    comm = Communicate(IP_ADDR)
     comm.get_handshake()
     while True:
         if comm.has_handshake():
