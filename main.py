@@ -6,7 +6,7 @@ IP_ADDR = ''
 PORT_NUM = 123
 GROUP_ID = 123
 NUM_DATA_POINTS = 18
-FILE_PATH = 'MODEL FILE PATH'
+FILE_PATH = 'model/rf.pkl'
 
 def get_feature_vector(raw_data):
     feat_vect = []
@@ -37,10 +37,10 @@ def main():
         # Send Data
         # For Testing (REMOVE DURING DEPLOYMENT)
         print(predict)
-        comm.sendData(ip_addr=IP_ADDR, port_num=PORT_NUM, groupID=GROUP_ID, action=predict, 
+        comm.sendData(ip_addr=IP_ADDR, port_num=PORT_NUM, groupID=GROUP_ID, action=predict,
             voltage=0, current=0, power=0, cumpower=0)
-    
-    
+
+
 if __name__ == "__main__":
     # Execute the main program
     main()

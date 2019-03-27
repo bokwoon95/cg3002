@@ -47,8 +47,8 @@ def top2(trainer, model_name):
     trainer.evaluate(extractor.X_test, extractor.y_test)
     trainer.save("models/"+model_name + ".pkl")
 
-#top(moves1_2, columns1, input_dir_path, trainer1, 'rf')
+top(moves1_2, columns1, input_dir_path, trainer1, 'rf')
 #top(moves1_2, columns1, input_dir_path, trainer2, 'svm')
 #top(moves1_2, columns1, input_dir_path, trainer3, 'mlp')
 
-top2(trainer1, 'rf')
+#top2(trainer1, 'rf')
