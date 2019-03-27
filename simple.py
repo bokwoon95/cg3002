@@ -88,7 +88,9 @@ def getData(label, duration):
     arr_2d = []
     curr_time = time.time()
     while time.time() - curr_time < duration:
+    #while True:
         lst = list(getIMUPacket())
+        print(lst)
         lst.insert(0, label)
         lst.pop(len(lst) - 1)
         arr_2d.append(lst)

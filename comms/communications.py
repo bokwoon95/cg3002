@@ -77,7 +77,7 @@ class Communicate:
         window_data = []
         curr_time = time.time()
         while time.time() - curr_time < duration:
-            print(self.getIMUPacket())
+            #print(self.getIMUPacket())
             window_data.append(self.getIMUPacket())
         return window_data
 
