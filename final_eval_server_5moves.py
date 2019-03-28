@@ -44,7 +44,7 @@ class Server(threading.Thread):
         self.action = None
         self.action_set_time = None
         self.x = 0
-        self.timeout = 60
+        self.timeout = 30
         self.no_response = False
         self.connection = None
         self.timer = None
