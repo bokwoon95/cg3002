@@ -104,8 +104,9 @@ class Communicate:
         # Generate random 16 byte initialization vector
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
-        print("PAYLOAD")
         print(payload)
+        print("========================================")
+        print()
         return base64.b64encode(iv + cipher.encrypt(payload))
 
     def sendData(self, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):

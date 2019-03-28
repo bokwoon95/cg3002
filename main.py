@@ -45,9 +45,10 @@ def main():
     classifier = Classifier(FILE_PATH)
     print(classifier)
     freqPredict = FreqPredictor()
+    if comm.has_handshake():
+        print("starting a new iteration: ")
     while True:
         if comm.has_handshake():
-            print("starting a new iteration: ")
             # Get data from IMU
             # raw_data = comm.getData(duration=1)
             raw_data = comm.getData2(window = 60)
