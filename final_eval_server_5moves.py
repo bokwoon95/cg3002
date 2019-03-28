@@ -88,6 +88,10 @@ class Server(threading.Thread):
                         print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'],
                             decodedmsg['current'], decodedmsg['power'],
                             decodedmsg['cumpower']))
+                        if self.action == decodedmsg['action'].lower():
+                            print("CORRECT")
+                        else:
+                            print("WRONG")
                         self.get_action()  # Get new action
                 except Exception as e:
                     print(e)
@@ -112,6 +116,8 @@ class Server(threading.Thread):
         self.action = self.actions[index]
         self.x += 1
         self.action_set_time = time.time()
+        print()
+        print()
         print("NEW ACTION :: {}".format(self.action))
         self.timer = threading.Timer(self.timeout, self.get_action)
         self.no_response = True
