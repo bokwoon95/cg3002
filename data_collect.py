@@ -1,4 +1,5 @@
 import time
+import datetime
 import csv
 import os
 import numpy as np
@@ -56,10 +57,10 @@ def main():
     while True:
         if comm.has_handshake():
             #filename = input("Enter the filename: ")
-            dt = uuid.uuid4()
-            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', filename + dt + '.csv')
-            #filename = 'data/' + filename + '.csv'
             label = input("Enter the label: ")
+            timenow = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', label + '_' + timenow + '.csv')
+            #filename = 'data/' + filename + '.csv'
             raw_data = comm.getData(duration=10)
             print("len of raw data is %d" % len(raw_data))
             save_training_data(filename, raw_data, label)

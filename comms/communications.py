@@ -95,11 +95,11 @@ class Communicate:
         return window_data
 
 
-    def encryptText(self, dictt, secret_key):
+    def encryptText(self, listt, secret_key):
         def pad(s):
             "pads string to a multiple of 16 chars"
             return s.rjust(len(s) + 16 - len(s) % 16, "0")
-        strarray = list(map(str, dictt.values()))
+        strarray = list(map(str, listt))
         payload = pad("#" + "|".join(strarray) + "|")
         # Generate random 16 byte initialization vector
         iv = Random.new().read(AES.block_size)
@@ -110,14 +110,15 @@ class Communicate:
 
     def sendData(self, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):
         """ Send data to the server """
-        dictionary = {
-            'action': action, 
-            'voltage': voltage,
-            'current': current,
-            'power': power,
-            'cumpower': cumpower
-        }
-        encrypted_msg = self.encryptText(dictionary, secret_key)
+        # dictionary = {
+        #     'action': action, 
+        #     'voltage': voltage,
+        #     'current': current,
+        #     'power': power,
+        #     'cumpower': cumpower
+        # }
+        listt = [action, voltage, current, power, cumpower]
+        encrypted_msg = self.encryptText(listt, secret_key)
         # time.sleep(60)
         self.client.send(encrypted_msg)
         # self.client.close()

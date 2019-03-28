@@ -12,7 +12,7 @@ curr_path = os.path.abspath(os.path.dirname(__file__))
 input_dir_path = os.path.join(curr_path, 'data')
 
 moves1 = ['Doublepump', 'Cowboy', 'Crab', 'Chicken', 'Raffles', 'Jamesbond', 'Runningman', 'Hunchback', 'Mermaid', 'Snake', 'Idle']
-moves1_2 = ['Raffles', 'Idle', 'Crab','Chicken', 'Hunchback', 'Cowboy']
+moves1_2 = ['raffles', 'idle', 'crab','chicken', 'hunchback', 'cowboy']
 columns1 = ['move','acc1_x', 'acc1_y', 'acc1_z', 
         'gyro1_x', 'gyro1_y', 'gyro1_z', 
         'acc2_x', 'acc2_y', 'acc2_z', 

@@ -1,6 +1,6 @@
 import numpy as np
 
-DANCE_MOVES = ['Doublepump', 'Cowboy', 'Crab', 'Chicken', 'Raffles', 'Jamesbond', 'Runningman', 'Hunchback', 'Mermaid', 'Snake', 'Idle']
+DANCE_MOVES = ['doublepump', 'cowboy', 'crab', 'chicken', 'raffles', 'jamesbond', 'runningman', 'hunchback', 'mermaid', 'snake', 'idle', 'logout']
 
 class FreqPredictor:
     def __init__(self):

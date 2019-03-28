@@ -3,6 +3,7 @@ from ml.classifier import Classifier
 from util.freqHistogram import FreqPredictor
 import numpy as np
 import sys
+import time
 
 IP_ADDR = ''
 PORT_NUM = 8888
@@ -46,29 +47,30 @@ def main():
     freqPredict = FreqPredictor()
     while True:
         if comm.has_handshake():
-            # print("starting a new iteration: ")
+            print("starting a new iteration: ")
             # Get data from IMU
-            raw_data = comm.getData(duration=1.5)
-            # raw_data = comm.getData2(window = 150)
+            # raw_data = comm.getData(duration=1)
+            raw_data = comm.getData2(window = 60)
             if raw_data == None:
                 print("Comms Error: None Type")
                 break
-            raw_data = [list(raw_data[i]) for i in range(90)]
+            # raw_data = [list(raw_data[i]) for i in range(90)]
             # Process data
             feature_vector = get_feature_vector(raw_data)
             # Check if MOVE is idle (TO BE IMPLEMENTED)
             predict = classifier.predict_once(feature_vector)
-            #if freqPredict.get_hist_count() < 1:
-            freqPredict.store_moves(predict)
-            #else:
-            final_predict = freqPredict.get_predict()
-            freqPredict.clear_hist()
-            print('Final Prediction', final_predict)
-            try:
-                comm.sendData(action=predict, voltage=0, current=0, power=0, cumpower=0)
-            except AttributeError:
-                # print("Communicate(): client has not been initialized")
-                continue
+            if freqPredict.get_hist_count() < 4:
+                freqPredict.store_moves(predict)
+            else:
+                final_predict = freqPredict.get_predict()
+                freqPredict.clear_hist()
+                print('Final Prediction', final_predict)
+                time.sleep(1)
+                try:
+                    comm.sendData(action=final_predict, voltage=0, current=0, power=0, cumpower=0)
+                except AttributeError:
+                    # print("Communicate(): client has not been initialized")
+                    continue
         # Send Data
             # For Testing (REMOVE DURING DEPLOYMENT)
 

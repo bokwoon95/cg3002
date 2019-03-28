@@ -54,7 +54,7 @@ class FeatureExtractor:
             return ls
 
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-        return slide(300, 150, data)
+        return slide(60, 30, data)
 
     # returns a list of dicts, each dict being a labeled feature vector
     def extract(self, input_file_path):
