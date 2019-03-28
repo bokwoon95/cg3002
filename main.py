@@ -1,5 +1,6 @@
 from comms.communications import Communicate
 from ml.classifier import Classifier
+from util.freqHistogram import FreqPredictor
 import numpy as np
 import sys
 
@@ -12,25 +13,26 @@ FILE_PATH = "/home/pi/cg3002/models/rf.pkl"
 # max_acc1_x,max_acc1_y,max_acc1_z,max_acc2_x,max_acc2_y,max_acc2_z,max_acc3_x,max_acc3_y,max_acc3_z,max_checksum,max_gyro1_x,max_gyro1_y,max_gyro1_z,max_gyro2_x,max_gyro2_y,max_gyro2_z,max_gyro3_x,max_gyro3_y,max_gyro3_z,mean_acc1_x,mean_acc1_y,mean_acc1_z,mean_acc2_x,mean_acc2_y,mean_acc2_z,mean_acc3_x,mean_acc3_y,mean_acc3_z,mean_checksum,mean_gyro1_x,mean_gyro1_y,mean_gyro1_z,mean_gyro2_x,mean_gyro2_y,mean_gyro2_z,mean_gyro3_x,mean_gyro3_y,mean_gyro3_z,min_acc1_x,min_acc1_y,min_acc1_z,min_acc2_x,min_acc2_y,min_acc2_z,min_acc3_x,min_acc3_y,min_acc3_z,min_checksum,min_gyro1_x,min_gyro1_y,min_gyro1_z,min_gyro2_x,min_gyro2_y,min_gyro2_z,min_gyro3_x,min_gyro3_y,min_gyro3_z,move,var_acc1_x,var_acc1_y,var_acc1_z,var_acc2_x,var_acc2_y,var_acc2_z,var_acc3_x,var_acc3_y,var_acc3_z,var_checksum,var_gyro1_x,var_gyro1_y,var_gyro1_z,var_gyro2_x,var_gyro2_y,var_gyro2_z,var_gyro3_x,var_gyro3_y,var_gyro3_z
 
 CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
-            'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
-            'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z'
-]
+        'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
+        'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z'
+        ]
 
 def get_feature_vector(raw_data):
     feat_vect = []
     raw_data = np.array(raw_data)
-    
+    # print("raw data is : ")
+    # print(raw_data)
     feature1 = []
     for i in range(NUM_DATA_POINTS):
         mean = np.mean(raw_data[:,i])
         feature1.append(mean)
-    
+
     feature2 = []
     for i in range(NUM_DATA_POINTS):
         variance = np.var(raw_data[:,i])
         feature2.append(variance)
 
-    feat_vect = feature1 + feature2 
+    feat_vect = feature1 + feature2
     return feat_vect
 
 
@@ -41,10 +43,13 @@ def main():
     print('Handshake completed')
     classifier = Classifier(FILE_PATH)
     print(classifier)
+    freqPredict = FreqPredictor()
     while True:
         if comm.has_handshake():
+            # print("starting a new iteration: ")
             # Get data from IMU
             raw_data = comm.getData(duration=1.5)
+            # raw_data = comm.getData2(window = 150)
             if raw_data == None:
                 print("Comms Error: None Type")
                 break
@@ -53,12 +58,22 @@ def main():
             feature_vector = get_feature_vector(raw_data)
             # Check if MOVE is idle (TO BE IMPLEMENTED)
             predict = classifier.predict_once(feature_vector)
-            # Send Data
+            #if freqPredict.get_hist_count() < 1:
+            freqPredict.store_moves(predict)
+            #else:
+            final_predict = freqPredict.get_predict()
+            freqPredict.clear_hist()
+            print('Final Prediction', final_predict)
+            try:
+                comm.sendData(action=predict, voltage=0, current=0, power=0, cumpower=0)
+            except AttributeError:
+                # print("Communicate(): client has not been initialized")
+                continue
+        # Send Data
             # For Testing (REMOVE DURING DEPLOYMENT)
-            # print(predict)
+
         else:
             print('Handshake broken')
-        #comm.sendData(ip_addr=IP_ADDR, port_num=PORT_NUM, groupID=GROUP_ID, action=predict, voltage=0, current=0, power=0, cumpower=0)
 
 
 if __name__ == "__main__":

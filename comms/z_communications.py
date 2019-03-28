@@ -21,14 +21,15 @@ class Communicate:
     def __init__(self, ip_addr='192.168.43.206', port_num=8888):
         self.serial = serial.Serial(
                 port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-                baudrate=115200,
+                baudrate=38400,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE,
                 bytesize=serial.EIGHTBITS,
                 timeout=1
             )
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect((ip_addr, port_num))
+        if ip_addr != '-':
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client.connect((ip_addr, port_num))
         self.handshake_done = False
 
     def get_handshake(self):
@@ -82,6 +83,13 @@ class Communicate:
             #print(self.getIMUPacket())
             window_data.append(self.getIMUPacket())
         return window_data
+
+    def getData2(self, window=90):
+        window_data = []
+        for i in range(window):
+            window_data.append(self.getIMUPacket())
+        return window_data
+
 
     def encryptText(self, dictt, secret_key):
         def pad(s):

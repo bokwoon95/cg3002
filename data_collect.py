@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from comms.communications import Communicate
 import sys
+import uuid
 
 def save_training_data(file_name, data, label, reset=False):
     if reset:
@@ -54,11 +55,13 @@ def main():
     comm.get_handshake()
     while True:
         if comm.has_handshake():
-            filename = input("Enter the filename: ")
-            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', filename + '.csv')
+            #filename = input("Enter the filename: ")
+            dt = uuid.uuid4()
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', filename + dt + '.csv')
             #filename = 'data/' + filename + '.csv'
             label = input("Enter the label: ")
             raw_data = comm.getData(duration=10)
+            print("len of raw data is %d" % len(raw_data))
             save_training_data(filename, raw_data, label)
             print('Collection complete')
         else:

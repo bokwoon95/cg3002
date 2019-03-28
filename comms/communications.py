@@ -60,6 +60,9 @@ class Communicate:
             endByte = self.serial.read().decode('utf-8')
             if endByte == 'E':
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
+                if unpacked_data is None:
+                    print("arduino is sending Nones")
+                    sys.exit()
                 # print(unpacked_data)
         return unpacked_data
 
@@ -83,6 +86,14 @@ class Communicate:
             #print(self.getIMUPacket())
             window_data.append(self.getIMUPacket())
         return window_data
+
+    def getData2(self, window=90):
+        window_data = []
+        for i in range(window):
+            window_data.append(self.getIMUPacket())
+        # print(window_data)
+        return window_data
+
 
     def encryptText(self, dictt, secret_key):
         def pad(s):
