@@ -83,11 +83,8 @@ class Server(threading.Thread):
                         pass
                     else:  # If action is available log it, and then...
                         self.no_response = False
-                        self.log_move_made(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'],
-                                decodedmsg['power'], decodedmsg['cumpower'])
-                        print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'],
-                            decodedmsg['current'], decodedmsg['power'],
-                            decodedmsg['cumpower']))
+                        self.log_move_made(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'], decodedmsg['power'], decodedmsg['cumpower'])
+                        print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'], decodedmsg['power'], decodedmsg['cumpower']))
                         if self.action == decodedmsg['action'].lower():
                             print("CORRECT")
                         else:
