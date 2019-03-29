@@ -70,7 +70,10 @@ def getIMUPacket():
         if endByte == 'E':
             unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
-            #import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace(
+            print("Received 'E'")
+        else:
+            print("Did not receive 'E' byte")
     return unpacked_data
 
 
@@ -103,6 +106,7 @@ def getData(label, duration):
             arr_2d.append(lst)
             #time.sleep(5 / 1000)
         else:
+            print("packet received is None")
             errCount += 1
         
         dataCount += 1
@@ -118,7 +122,7 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 
-sensordata = getData("Doublepump", 10)
+sensordata = getData("Doublepump", 60)
 
 with open('data.csv', 'a') as fd:
     sensordata = ("no data") if sensordata is None else sensordata

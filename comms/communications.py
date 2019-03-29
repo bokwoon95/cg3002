@@ -16,6 +16,7 @@ SYN = b'\x01'
 SYN_ACK = b'\x02'
 DATA_R = b'\x03'
 DATA_P = b'\x04'
+EMPTY = b'\x05'
 
 class Communicate:
     def __init__(self, ip_addr='192.168.43.206', port_num=8888):
@@ -51,19 +52,20 @@ class Communicate:
         return self.handshake_done
 
     def getIMUPacket(self):
-        """ Returns a list of len 19 """
         unpacked_data = None
         self.serial.write(DATA_R)  # Request for arduino to send data over
-        startByte = self.serial.read().decode("utf-8")
+        rawData = self.serial.read() 
+        if (rawData == EMPTY):
+            print("Empty Buffer")
+            return None
+        startByte = rawData.decode("utf-8")
         if startByte == 'S':
             dataBytes = self.serial.read(IMU_PACKET_SIZE)
-            endByte = self.serial.read().decode('utf-8')
+            endByte = self.serial.read().decode("utf-8")
             if endByte == 'E':
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
-                if unpacked_data is None:
-                    print("arduino is sending Nones")
-                    sys.exit()
                 # print(unpacked_data)
+                #import pdb; pdb.set_trace()
         return unpacked_data
 
     def getPowerPacket(self):
@@ -84,13 +86,22 @@ class Communicate:
         curr_time = time.time()
         while time.time() - curr_time < duration:
             #print(self.getIMUPacket())
-            window_data.append(self.getIMUPacket())
+            packet = self.getIMUPacket()
+            if packet is not None:
+                window_data.append(self.getIMUPacket())
         return window_data
 
     def getData2(self, window=90):
         window_data = []
         for i in range(window):
-            window_data.append(self.getIMUPacket())
+            packet = self.getIMUPacket()
+            done = False
+            while not done:
+                if packet is not None:
+                    window_data.append(self.getIMUPacket())
+                    done = True
+                else:
+                    packet = self.getIMUPacket()
         # print(window_data)
         return window_data
 
