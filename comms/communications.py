@@ -88,7 +88,7 @@ class Communicate:
             #print(self.getIMUPacket())
             packet = self.getIMUPacket()
             if packet is not None:
-                window_data.append(self.getIMUPacket())
+                window_data.append(packet)
         return window_data
 
     def getData2(self, window=90):
@@ -104,6 +104,29 @@ class Communicate:
                     packet = self.getIMUPacket()
         # print(window_data)
         return window_data
+
+    def getData3(self, duration=1000):
+      dataCount = 0
+      errCount = 0
+      print("Collecting data for %d seconds" % duration)
+      arr_2d = []
+      curr_time = time.time()
+      while time.time() - curr_time < duration:
+        packet = self.getIMUPacket()
+        print(packet)
+        if packet is not None:
+           lst = list(packet)
+           arr_2d.append(lst)
+           #time.sleep(5 / 1000)
+        else:
+           print("packet received is None")
+           errCount += 1 
+        dataCount += 1
+        #with open('training.csv', 'a') as fd:
+        #    csv.writer(fd).writerows(arr_2d)
+      print("Err/Data: %d/%d" % (errCount, dataCount))
+      print("Freq: %d" % (dataCount / duration))
+      return arr_2d
 
 
     def encryptText(self, listt, secret_key):

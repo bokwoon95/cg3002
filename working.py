@@ -3,6 +3,8 @@ import struct
 import time
 import csv
 import binascii
+import comms.communications import Communicate
+
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
@@ -122,8 +124,12 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 
-sensordata = getData("Doublepump", 60)
+#sensordata = getData("Doublepump", 60)
+comm = Communicate("-")
+raw_data = comm.getData()
 
-with open('data.csv', 'a') as fd:
-    sensordata = ("no data") if sensordata is None else sensordata
-    csv.writer(fd).writerows(sensordata)
+print("number of data packets %d" % len(raw_data))
+
+#with open('data.csv', 'a') as fd:
+#    sensordata = ("no data") if sensordata is None else sensordata
+#    csv.writer(fd).writerows(sensordata)
