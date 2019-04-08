@@ -73,7 +73,9 @@ class Communicate:
         return unpacked_data
 
     def getData(self, duration=1000):
-        """ Duration in seconds """
+        """ This method returns a list of IMU sensor data
+            Duration in seconds """
+            
         window_data = []
         curr_time = time.time()
         while time.time() - curr_time < duration:
