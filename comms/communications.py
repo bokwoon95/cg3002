@@ -16,17 +16,21 @@ SYN = b'\x01'
 SYN_ACK = b'\x02'
 DATA_R = b'\x03'
 DATA_P = b'\x04'
+EMPTY = b'\x05'
 
 class Communicate:
-    def __init__(self):
+    def __init__(self, ip_addr='192.168.43.206', port_num=8888):
         self.serial = serial.Serial(
                 port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-                baudrate=115200,
+                baudrate=38400,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE,
                 bytesize=serial.EIGHTBITS,
                 timeout=1
             )
+        if ip_addr != '-':
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client.connect((ip_addr, port_num))
         self.handshake_done = False
 
     def get_handshake(self):
@@ -48,16 +52,20 @@ class Communicate:
         return self.handshake_done
 
     def getIMUPacket(self):
-        """ Returns a list of len 19 """
         unpacked_data = None
         self.serial.write(DATA_R)  # Request for arduino to send data over
-        startByte = self.serial.read().decode("utf-8")
+        rawData = self.serial.read() 
+        if (rawData == EMPTY):
+            print("Empty Buffer")
+            return None
+        startByte = rawData.decode("utf-8")
         if startByte == 'S':
             dataBytes = self.serial.read(IMU_PACKET_SIZE)
-            endByte = self.serial.read().decode('utf-8')
+            endByte = self.serial.read().decode("utf-8")
             if endByte == 'E':
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
+                #import pdb; pdb.set_trace()
         return unpacked_data
 
     def getPowerPacket(self):
@@ -80,32 +88,74 @@ class Communicate:
         curr_time = time.time()
         while time.time() - curr_time < duration:
             #print(self.getIMUPacket())
-            window_data.append(self.getIMUPacket())
+            packet = self.getIMUPacket()
+            if packet is not None:
+                window_data.append(packet)
         return window_data
 
-    def encryptText(self, dictt, secret_key):
+    def getData2(self, window=90):
+        window_data = []
+        for i in range(window):
+            packet = self.getIMUPacket()
+            done = False
+            while not done:
+                if packet is not None:
+                    window_data.append(self.getIMUPacket())
+                    done = True
+                else:
+                    packet = self.getIMUPacket()
+        # print(window_data)
+        return window_data
+
+    def getData3(self, duration=1000):
+      dataCount = 0
+      errCount = 0
+      print("Collecting data for %d seconds" % duration)
+      arr_2d = []
+      curr_time = time.time()
+      while time.time() - curr_time < duration:
+        packet = self.getIMUPacket()
+        print(packet)
+        if packet is not None:
+           lst = list(packet)
+           arr_2d.append(lst)
+           #time.sleep(5 / 1000)
+        else:
+           print("packet received is None")
+           errCount += 1 
+        dataCount += 1
+        #with open('training.csv', 'a') as fd:
+        #    csv.writer(fd).writerows(arr_2d)
+      print("Err/Data: %d/%d" % (errCount, dataCount))
+      print("Freq: %d" % (dataCount / duration))
+      return arr_2d
+
+
+    def encryptText(self, listt, secret_key):
         def pad(s):
             "pads string to a multiple of 16 chars"
             return s.rjust(len(s) + 16 - len(s) % 16, "0")
-        strarray = list(map(str, dictt.values()))
+        strarray = list(map(str, listt))
         payload = pad("#" + "|".join(strarray) + "|")
         # Generate random 16 byte initialization vector
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
+        print(payload)
+        print("========================================")
+        print()
         return base64.b64encode(iv + cipher.encrypt(payload))
 
-    def sendData(self, ip_addr, port_num, groupID, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):
+    def sendData(self, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):
         """ Send data to the server """
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((ip_addr, port_num))
-        dictionary = {
-            'action': action, 
-            'voltage': voltage,
-            'current': current,
-            'power': power,
-            'cumpower': cumpower
-        }
-        encrypted_msg = self.encryptText(dictionary, secret_key)
-        time.sleep(60)
-        client.send(encrypted_msg)
-        client.close()
+        # dictionary = {
+        #     'action': action, 
+        #     'voltage': voltage,
+        #     'current': current,
+        #     'power': power,
+        #     'cumpower': cumpower
+        # }
+        listt = [action, voltage, current, power, cumpower]
+        encrypted_msg = self.encryptText(listt, secret_key)
+        # time.sleep(60)
+        self.client.send(encrypted_msg)
+        # self.client.close()

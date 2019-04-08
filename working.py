@@ -3,6 +3,8 @@ import struct
 import time
 import csv
 import binascii
+import comms.communications import Communicate
+
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
 
@@ -11,7 +13,7 @@ POWER_PACKET_SIZE = 8
 
 ser = serial.Serial(
     port='/dev/serial0',  # Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-    baudrate=115200,
+    baudrate=38400,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
@@ -70,7 +72,10 @@ def getIMUPacket():
         if endByte == 'E':
             unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
-            #import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace(
+            print("Received 'E'")
+        else:
+            print("Did not receive 'E' byte")
     return unpacked_data
 
 
@@ -103,6 +108,7 @@ def getData(label, duration):
             arr_2d.append(lst)
             #time.sleep(5 / 1000)
         else:
+            print("packet received is None")
             errCount += 1
         
         dataCount += 1
@@ -118,8 +124,12 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 
-sensordata = getData("Doublepump", 10)
+#sensordata = getData("Doublepump", 60)
+comm = Communicate("-")
+raw_data = comm.getData()
 
-with open('data.csv', 'a') as fd:
-    sensordata = ("no data") if sensordata is None else sensordata
-    csv.writer(fd).writerows(sensordata)
+print("number of data packets %d" % len(raw_data))
+
+#with open('data.csv', 'a') as fd:
+#    sensordata = ("no data") if sensordata is None else sensordata
+#    csv.writer(fd).writerows(sensordata)

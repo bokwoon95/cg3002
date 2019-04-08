@@ -1,9 +1,12 @@
 import time
+import datetime
 import csv
 import os
 import numpy as np
 import pandas as pd
 from comms.communications import Communicate
+import sys
+import uuid
 
 def save_training_data(file_name, data, label, reset=False):
     if reset:
@@ -44,15 +47,22 @@ def get_training_data(file_path, columns):
 
 
 def main():
-    comm = Communicate()
+    if len(sys.argv) != 2:
+        print('Invalid number of arguments')
+        print('python3 data_collect.py [IP address]')
+        sys.exit()
+    IP_ADDR = sys.argv[1]
+    comm = Communicate(IP_ADDR)
     comm.get_handshake()
     while True:
         if comm.has_handshake():
-            filename = input("Enter the filename: ")
-            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', filename + '.csv')
-            #filename = 'data/' + filename + '.csv'
+            #filename = input("Enter the filename: ")
             label = input("Enter the label: ")
+            timenow = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', label + '_' + timenow + '.csv')
+            #filename = 'data/' + filename + '.csv'
             raw_data = comm.getData(duration=10)
+            print("len of raw data is %d" % len(raw_data))
             save_training_data(filename, raw_data, label)
             print('Collection complete')
         else:

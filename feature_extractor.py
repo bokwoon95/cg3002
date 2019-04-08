@@ -12,23 +12,26 @@ class FeatureExtractor:
         features = self.extract(csv_path)
 
         x = pd.DataFrame(features)
-
-        print(x)
+        
+        print("feature dataframe dimension is: ")
+        print(x.shape)
         output_csv_path = os.path.join(self.input_dir_path, 'out.csv')
         self.save(x, output_csv_path)
 
     def top2(self):
-        csv_path = os.path.join(self.input_dir_path, 'in_merge.csv')
+        csv_path = os.path.join(self.input_dir_path, 'in.csv')
         features = self.extract2(csv_path)
 
         x = pd.DataFrame(features)
-        print(x)
+        print("feature dataframe dimension is: ")
+        print(x.shape)
         output_csv_path = os.path.join(self.input_dir_path, 'out.csv')
         self.save(x, output_csv_path)
 
     def extract2(self, input_file_path):
         def slide(size, step, data):
             attributes = self.column_names.copy()
+            #discount first item in header
             attributes.pop(0)
             ls = []
             num_rows = data.shape[0]
@@ -51,7 +54,7 @@ class FeatureExtractor:
             return ls
 
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-        return slide(200, 100, data)
+        return slide(60, 30, data)
 
     # returns a list of dicts, each dict being a labeled feature vector
     def extract(self, input_file_path):
@@ -75,11 +78,11 @@ class FeatureExtractor:
 
         # assume input csv has row labels but no column labels
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
-
+        print(data)
         # loop through all moves
         ret = []
         for move in self.moves:
-            curr = slide(200, 100, data.loc[move], move)
+            curr = slide(90, 45, data.loc[move], move)
             ret += curr
         return ret
 

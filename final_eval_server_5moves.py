@@ -23,6 +23,7 @@ class Server(threading.Thread):
         self.auth = server_auth()
         # Create a TCP/IP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # Bind the socket to the port
         server_address = (ip_addr, port_num)
         print('starting up on %s port %s' % server_address, file=sys.stderr)
@@ -43,7 +44,7 @@ class Server(threading.Thread):
         self.action = None
         self.action_set_time = None
         self.x = 0
-        self.timeout = 60
+        self.timeout = 30
         self.no_response = False
         self.connection = None
         self.timer = None
@@ -82,11 +83,12 @@ class Server(threading.Thread):
                         pass
                     else:  # If action is available log it, and then...
                         self.no_response = False
-                        self.log_move_made(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'],
-                                decodedmsg['power'], decodedmsg['cumpower'])
-                        print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'],
-                            decodedmsg['current'], decodedmsg['power'],
-                            decodedmsg['cumpower']))
+                        self.log_move_made(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'], decodedmsg['power'], decodedmsg['cumpower'])
+                        print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'], decodedmsg['power'], decodedmsg['cumpower']))
+                        if self.action == decodedmsg['action'].lower():
+                            print("CORRECT")
+                        else:
+                            print("WRONG")
                         self.get_action()  # Get new action
                 except Exception as e:
                     print(e)
@@ -111,6 +113,8 @@ class Server(threading.Thread):
         self.action = self.actions[index]
         self.x += 1
         self.action_set_time = time.time()
+        print()
+        print()
         print("NEW ACTION :: {}".format(self.action))
         self.timer = threading.Timer(self.timeout, self.get_action)
         self.no_response = True
