@@ -3,7 +3,7 @@ import struct
 import time
 import csv
 import binascii
-import comms.communications import Communicate
+from comms.communications import Communicate
 
 
 # ser = serial.Serial("/dev/serial1", 115200, timeout=1, bytesize=8, parity='N', stopbits=1)
@@ -123,10 +123,14 @@ powerdata  = getPowerPacket()
 print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
+print("Testing sensors")
+sensordata = getData("Doublepump", 10)
 
-#sensordata = getData("Doublepump", 60)
+print("DONE")
+print("Testing comms functions")
+
 comm = Communicate("-")
-raw_data = comm.getData()
+raw_data = comm.getData(5)
 
 print("number of data packets %d" % len(raw_data))
 
