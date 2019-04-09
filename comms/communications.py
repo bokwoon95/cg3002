@@ -93,13 +93,15 @@ class Communicate:
             packet = self.getIMUPacket()
             # if packet is not None && packet[-1] == binascii.crc32(rawdata):
             if packet is not None:
-                window_data.append(packet)
-            else: # for debugging checksum fails
-                print("--------------------------------------------------------------------------------")
-                print("checksum no match:")
-                print(packet[-1], checksum)
-                print(packet)
-                print("--------------------------------------------------------------------------------")
+                if True: # ignore the checksum for now
+                # if packet[-1] == binascii.crc32(rawdata):
+                    window_data.append(packet)
+                else:
+                    print("--------------------------------------------------------------------------------")
+                    print("checksum no match:")
+                    print(packet[-1], checksum)
+                    print(packet)
+                    print("--------------------------------------------------------------------------------")
         return window_data
 
     def getData2(self, window=90):
