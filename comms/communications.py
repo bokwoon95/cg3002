@@ -67,7 +67,7 @@ class Communicate:
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
                 #import pdb; pdb.set_trace()
-        # return unpacked_data, dataBytes[-5:-1]
+        # return unpacked_data, dataBytes[:-4]
         return unpacked_data
 
     def getPowerPacket(self):
@@ -89,10 +89,9 @@ class Communicate:
         window_data = []
         curr_time = time.time()
         while time.time() - curr_time < duration:
-            #print(self.getIMUPacket())
-            # packet, checksum = self.getIMUPacket()
+            # packet, rawdata = self.getIMUPacket()
             packet = self.getIMUPacket()
-            # if packet is not None && packet[-1] == checksum:
+            # if packet is not None && packet[-1] == binascii.crc32(rawdata):
             if packet is not None:
                 window_data.append(packet)
             else: # for debugging checksum fails
