@@ -43,15 +43,15 @@ struct __attribute__ ((packed)) power_data {
 //MPU6050 MPU_TORSO;
 MPU6050 accelgyro;
 
-CircularBuffer<IMU_data,5> IMU_data_buffer; 
+CircularBuffer<IMU_data,1> IMU_data_buffer; 
 
 SemaphoreHandle_t xSemaphore_IMU = NULL;
 SemaphoreHandle_t xSemaphore_power = NULL;
 
 const int MPU_ADDR = 0x68; // I2C address of the MPU-6050. If AD0 pin is set to HIGH, the I2C address will be 0x69.
-const int sensor1 = 22;
-const int sensor2 = 24;
-const int sensor3 = 26;
+const int sensor1 = 4;     // left wrist
+const int sensor2 = 3;     // right wrist
+const int sensor3 = 2;     // back
 
 int16_t accelerometer_x, accelerometer_y, accelerometer_z;   // variables for accelerometer raw data
 int16_t gyro_x, gyro_y, gyro_z;                             // variables for gyro raw data
@@ -80,10 +80,6 @@ byte EMPTY = 5;
 
 // send the structure giving the IMU state through serial
 void send_IMU_struct() {
-//    Serial.println("Sending Sensor Data");
-//    Serial.println("Sending: S");
- 
-//    Serial.println("Sending: E");
     if (!IMU_data_buffer.isEmpty()) {
       data = IMU_data_buffer.shift();
       Serial1.write('S');
@@ -92,6 +88,9 @@ void send_IMU_struct() {
     } else {
       Serial.println("Buffer is empty");
       Serial1.write(EMPTY);
+      accelgyro.initialize();
+      Serial.println(accelgyro.testConnection() ? "accelgyro connection successful" : "accelgyro connection failed");
+
     }
 
     return;
@@ -142,8 +141,8 @@ void retrieveSensorData(void *p){
                 IMU_data_buffer.push(data);
 
                 int buffer_size = IMU_data_buffer.size();
-                Serial.print("buffer size: ");
-                Serial.println(buffer_size);
+//                Serial.print("buffer size: ");
+//                Serial.println(buffer_size);
                 /* We have finished accessing the shared resource.  Release the
                    semaphore. */
                 xSemaphoreGive( xSemaphore_IMU );
@@ -170,7 +169,6 @@ void retrievePowerData(void *p){
     const TickType_t xFrequency = PERIOD * 4;
 
     for(;;){
-//        delay(DELAY_AMT);
         if( xSemaphore_power != NULL ){
             /* See if we can obtain the semaphore.  If the semaphore is not
                available wait 10 ticks to see if it becomes free. */
@@ -178,7 +176,7 @@ void retrievePowerData(void *p){
             {
                 /* We were able to obtain the semaphore and can now access the
                    shared resource. */
-//                Serial.println("Retrieving Power Data, 1");
+                   
                 /* ... */
 
                 /* We have finished accessing the shared resource.  Release the
@@ -194,9 +192,6 @@ void retrievePowerData(void *p){
 
         vTaskDelayUntil(&xLastWakeTime, xFrequency / portTICK_PERIOD_MS);
     }
-
-    
-
 }
 
 int response = 0;
@@ -295,59 +290,38 @@ void getData(int sensorNum, IMU_data* data){
         digitalWrite (sensor1, LOW);
         digitalWrite (sensor2, HIGH);
         digitalWrite (sensor3, HIGH);
-        accelgyro.setXAccelOffset(1382);
-        accelgyro.setYAccelOffset(1003);
-        accelgyro.setZAccelOffset(1277);
+        accelgyro.setXAccelOffset(45);
+        accelgyro.setYAccelOffset(-1083);
+        accelgyro.setZAccelOffset(1201);
     
-        accelgyro.setXGyroOffset(121);
-        accelgyro.setYGyroOffset(17);
-        accelgyro.setZGyroOffset(41);
+        accelgyro.setXGyroOffset(99);
+        accelgyro.setYGyroOffset(40);
+        accelgyro.setZGyroOffset(-9);
     } else if (sensorNum == 2) {
         digitalWrite (sensor1, HIGH);
         digitalWrite (sensor2, LOW);
         digitalWrite (sensor3, HIGH);
-        accelgyro.setXAccelOffset(-377);
-        accelgyro.setYAccelOffset(-779);
-        accelgyro.setZAccelOffset(1167);
+        accelgyro.setXAccelOffset(1110);
+        accelgyro.setYAccelOffset(1286);
+        accelgyro.setZAccelOffset(1211);
     
-        accelgyro.setXGyroOffset(103);
-        accelgyro.setYGyroOffset(39);
-        accelgyro.setZGyroOffset(-2);
+        accelgyro.setXGyroOffset(112);
+        accelgyro.setYGyroOffset(20);
+        accelgyro.setZGyroOffset(40);
     }else if (sensorNum == 3) {
         digitalWrite (sensor1, HIGH);
         digitalWrite (sensor2, HIGH);
         digitalWrite (sensor3, LOW); 
-        accelgyro.setXAccelOffset(2095);
-        accelgyro.setYAccelOffset(160);
-        accelgyro.setZAccelOffset(1028);
+        accelgyro.setXAccelOffset(2064);
+        accelgyro.setYAccelOffset(111);
+        accelgyro.setZAccelOffset(1039);
     
-        accelgyro.setXGyroOffset(96);
+        accelgyro.setXGyroOffset(91);
         accelgyro.setYGyroOffset(-135);
-        accelgyro.setZGyroOffset(-11);
+        accelgyro.setZGyroOffset(-14);
     }
 
     accelgyro.getMotion6(&accelerometer_x, &accelerometer_y, &accelerometer_z, &gyro_x, &gyro_y, &gyro_z);
-    
-//    Wire.beginTransmission(MPU_ADDR);
-//    Wire.write(0x3B);                                       // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
-//    Wire.endTransmission(false);                            // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
-//    Wire.requestFrom(MPU_ADDR, 6, true);                    // request a total of 6 registers
-//                                                            // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
-//    accelerometer_x = Wire.read()<<8 | Wire.read();         // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
-//    accelerometer_y = Wire.read()<<8 | Wire.read();         // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
-//    accelerometer_z = Wire.read()<<8 | Wire.read();         // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
-//  
-//    Wire.beginTransmission(MPU_ADDR);
-//    Wire.write(0x43);                                       // starting with register 0x43 (GYRO_XOUT_H) [MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
-//    Wire.endTransmission(false);                            // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
-//    Wire.requestFrom(MPU_ADDR, 6, true);                    // request a total of 6 registers
-//    
-//    gyro_x = Wire.read()<<8 | Wire.read();                  // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
-//    gyro_y = Wire.read()<<8 | Wire.read();                  // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
-//    gyro_z = Wire.read()<<8 | Wire.read();                  // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
-//    
-
-
 
     if(sensorNum == 1) {
         data->Ac1X = accelerometer_x;
@@ -386,29 +360,18 @@ void setup() {
     Serial.print(IMU_data_len);
     Serial.println();
     Serial.println(F("done with setup"));
+    delay(300);
 
     pinMode(sensor1, OUTPUT);
     pinMode(sensor2, OUTPUT);
     pinMode(sensor3, OUTPUT);
-    
-//    Wire.begin();
-//    Wire.beginTransmission(MPU_ADDR); // Start the transimission by communicating through the address of MPU6050
-//    Wire.write(0x6B);                 // Access the PWR_MGMT_1 register to configure power mode
-//    Wire.write(0);                    // Set the bit controlling SLEEP to zero (wakes up the MPU6050)
-//    Wire.endTransmission(true);       // End communication
 
     Serial.println("Initializing I2C devices...");
     Wire.begin();
     accelgyro.initialize();
-//    MPU_ARM.initialize();
-//    MPU_LEG.initialize();
-//    MPU_TORSO.initialize();
 
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "accelgyro connection successful" : "accelgyro connection failed");
-//    Serial.println(MPU_ARM.testConnection() ? "MPU_ARM connection successful" : "MPU_ARM connection failed");
-//    Serial.println(MPU_LEG.testConnection() ? "MPU_LEG connection successful" : "MPU_LEG connection failed");
-//    Serial.println(MPU_TORSO.testConnection() ? "MPU_TORSO connection successful" : "MPU_TORSO connection failed");
 
     // Initialize dummy data
     data.Ac1X = 1;
