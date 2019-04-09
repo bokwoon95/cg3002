@@ -6,6 +6,7 @@ import socket
 import struct
 import time
 import csv
+import binascii
 
 IMU_PACKET_SIZE = 40
 POWER_PACKET_SIZE = 8
@@ -66,6 +67,7 @@ class Communicate:
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
                 #import pdb; pdb.set_trace()
+        # return unpacked_data, dataBytes[-5:-1]
         return unpacked_data
 
     def getPowerPacket(self):
@@ -88,9 +90,17 @@ class Communicate:
         curr_time = time.time()
         while time.time() - curr_time < duration:
             #print(self.getIMUPacket())
+            # packet, checksum = self.getIMUPacket()
             packet = self.getIMUPacket()
+            # if packet is not None && packet[-1] == checksum:
             if packet is not None:
                 window_data.append(packet)
+            else: # for debugging checksum fails
+                print("--------------------------------------------------------------------------------")
+                print("checksum no match:")
+                print(packet[-1], checksum)
+                print(packet)
+                print("--------------------------------------------------------------------------------")
         return window_data
 
     def getData2(self, window=90):
