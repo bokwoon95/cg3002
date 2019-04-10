@@ -1,4 +1,4 @@
-from features import get_feature_vector
+#from features import get_feature_vector
 from comms.communications import Communicate
 from ml.classifier import Classifier
 from util.freqHistogram import FreqPredictor
@@ -15,33 +15,46 @@ FILE_PATH = "/home/pi/cg3002/models/rf.pkl"
 
 
 # TO BE REMOVED AFTER TESTING
-# CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
-#         'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
-#         'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z'
-#         ]
+CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
+        'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
+        'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z'
+        ]
 
+DANCE_DICT = {
+        'doublepump':0,
+        'cowboy':0,
+        'crab':0,
+        'chicken':0,
+        'raffles':0,
+        'jamesbond':0,
+        'runnningman':0,
+        'hunchback':0,
+        'mermaid':0,
+        'snake':0,
+        'idle':0,
+        'final':0
+        }
 
 # TO BE REMOVED AFTER TESTING
-# def get_feature_vector(raw_data):
-#     feat_vect = []
-#     raw_data = np.array(raw_data)
-#     # print("raw data is : ")
-#     # print(raw_data)
-#     feature1 = []
-#     for i in range(NUM_DATA_POINTS):
-#         mean = np.mean(raw_data[:,i])
-#         feature1.append(mean)
-#     feature2 = []
-#     for i in range(NUM_DATA_POINTS):
-#         variance = np.var(raw_data[:,i])
-#         feature2.append(variance)
+def get_feature_vector(raw_data):
+    feat_vect = []
+    raw_data = np.array(raw_data)
+     # print("raw data is : ")
+     # print(raw_data)
+    feature1 = []
+    for i in range(NUM_DATA_POINTS):
+        mean = np.mean(raw_data[:,i])
+        feature1.append(mean)
+    feature2 = []
+    for i in range(NUM_DATA_POINTS):
+        variance = np.var(raw_data[:,i])
+        feature2.append(variance)
 
-#     feat_vect = feature1 + feature2
-#     return feat_vect
+    feat_vect = feature1 + feature2
+    return feat_vect
 
 
 def main():
-    global first
     comm = Communicate(IP_ADDR)
     print('Handshake started')
     comm.get_handshake()
@@ -49,9 +62,11 @@ def main():
     classifier = Classifier(FILE_PATH)
     print(classifier)
     freqPredict = FreqPredictor()
-    time.sleep(57)
+    dance_dict = DANCE_DICT.copy()
+#    time.sleep(57)
     if comm.has_handshake():
         print("starting a new iteration: ")
+    input("Press any key to continue")
     while True:
         if comm.has_handshake():
             # Get data from IMU
@@ -61,31 +76,11 @@ def main():
                 print("Comms Error: None Type")
                 break
 
-            # TO BE REMOVED. 
-            # is_skip = False
-            # for data in raw_data:
-            #     if data is None:
-            #         is_skip = True
-            #         print("None inside ")
-            #         break
-            # if is_skip:
-            #     continue
-
-            # TO BE REMOVED
-            # raw_data = [list(raw_data[i]) for i in range(90)]
-
-
             # Process data
             feature_vector = get_feature_vector(raw_data)
             # Check if MOVE is idle (TO BE IMPLEMENTED)
             predict = classifier.predict_once(feature_vector)
-
-            # TO BE REMOVED
-            #if(predict == "idle" and first):
-                #first = False
-                #freqPredict.clear_hist()
-             #   continue
-
+            predict = predict.lower() 
 
             if freqPredict.get_hist_count() < 4:
                 freqPredict.store_moves(predict)

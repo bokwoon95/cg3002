@@ -11,8 +11,11 @@ from data.process import Loader
 curr_path = os.path.abspath(os.path.dirname(__file__))
 input_dir_path = os.path.join(curr_path, 'data')
 
-moves1 = ['Doublepump', 'Cowboy', 'Crab', 'Chicken', 'Raffles', 'Jamesbond', 'Runningman', 'Hunchback', 'Mermaid', 'Snake', 'Idle']
-moves1_2 = ['raffles', 'idle', 'crab','chicken', 'hunchback', 'cowboy']
+moves = ['doublepump', 'cowboy', 'crab', 'chicken', 'raffles', 'jamesbond', 'runningman', 'hunchback', 'mermaid', 'snake', 'idle', 'logout']
+moves1 = ['Doublepump', 'Cowboy', 'Crab', 'Chicken', 'Raffles', 'Jamesbond',
+        'Runningman', 'Hunchback', 'Mermaid', 'Snake', 'Idle', 'Final']
+moves2 = ['runningman']
+
 columns1 = ['move','acc1_x', 'acc1_y', 'acc1_z', 
         'gyro1_x', 'gyro1_y', 'gyro1_z', 
         'acc2_x', 'acc2_y', 'acc2_z', 
@@ -48,7 +51,7 @@ def top(moves, columns, dir_path, trainer, model_name):
   
     extractor = FeatureExtractor(input_dir_path, moves, columns)
     start_time = time.time()
-    extractor.top2()
+    extractor.top()
     stop_time = time.time()
     print("Feature extractor ran for %.6f seconds" % (stop_time - start_time))
     loader.top()
@@ -57,15 +60,4 @@ def top(moves, columns, dir_path, trainer, model_name):
     trainer.evaluate(loader.X_test,loader.y_test)
     trainer.save("models/"+ model_name + ".pkl")
 
-def top2(trainer, model_name):
-    extractor = SpFeatureExtractor(preprocess.X, preprocess.y)
-    extractor.top()
-    trainer.train(extractor.X_train, extractor.y_train)
-    trainer.evaluate(extractor.X_test, extractor.y_test)
-    trainer.save("models/"+model_name + ".pkl")
-
-top(moves1_2, columns1, input_dir_path, trainer1, 'rf')
-#top(moves1_2, columns1, input_dir_path, trainer2, 'svm')
-#top(moves1_2, columns1, input_dir_path, trainer3, 'mlp')
-
-#top2(trainer1, 'rf')
+top(moves1, columns1, input_dir_path, trainer1, 'rf')

@@ -6,19 +6,8 @@ class FeatureExtractor:
         self.input_dir_path = input_dir_path
         self.moves = moves
         self.column_names = column_names
-
+ 
     def top(self):
-        csv_path = os.path.join(self.input_dir_path, 'in.csv')
-        features = self.extract(csv_path)
-
-        x = pd.DataFrame(features)
-        
-        print("feature dataframe dimension is: ")
-        print(x.shape)
-        output_csv_path = os.path.join(self.input_dir_path, 'out.csv')
-        self.save(x, output_csv_path)
-
-    def top2(self):
         csv_path = os.path.join(self.input_dir_path, 'in.csv')
         features = self.extract2(csv_path)
 
@@ -54,6 +43,7 @@ class FeatureExtractor:
             return ls
 
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
+        print(data.dtypes)
         return slide(60, 30, data)
 
     # returns a list of dicts, each dict being a labeled feature vector
