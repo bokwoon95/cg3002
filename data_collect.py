@@ -62,6 +62,7 @@ def main():
             filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', label + '_' + timenow + '.csv')
             #filename = 'data/' + filename + '.csv'
             raw_data = comm.getData(duration=10)
+            # print(raw_data)
             print("len of raw data is %d" % len(raw_data))
             save_training_data(filename, raw_data, label)
             print('Collection complete')

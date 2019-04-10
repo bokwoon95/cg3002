@@ -102,6 +102,13 @@ class Communicate:
                     print(packet[-1], checksum)
                     print(packet)
                     print("--------------------------------------------------------------------------------")
+                # window_data.append(packet)
+            # else: # for debugging checksum fails
+            #     print("--------------------------------------------------------------------------------")
+            #     print("checksum no match:")
+            #     print(packet[-1], checksum)
+            #     print(packet)
+            #     print("--------------------------------------------------------------------------------")
         return window_data
 
     def getData2(self, window=90):
