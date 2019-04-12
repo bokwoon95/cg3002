@@ -5,6 +5,8 @@ from util.freqHistogram import FreqPredictor
 import numpy as np
 import sys
 import time
+from collections import deque
+
 
 IP_ADDR = ''
 PORT_NUM = 8888
@@ -49,8 +51,17 @@ def get_feature_vector(raw_data):
     for i in range(NUM_DATA_POINTS):
         variance = np.var(raw_data[:,i])
         feature2.append(variance)
-
-    feat_vect = feature1 + feature2
+    feature3 = []
+    for i in range(NUM_DATA_POINTS):
+        q75, q25 = np.percentile(raw_data[:,i], [75,25])
+        irq_value = q75 - q25
+        feature3.append(irq_value)
+    feature4 = []
+    for i in range(NUM_DATA_POINTS):
+        psd_value = np.mean(np.abs(np.fft.fft(raw_data[:,i]))**2)
+        feature4.append(psd_value)
+    
+    feat_vect = feature1 + feature2 + feature3 + feature4
     return feat_vect
 
 
@@ -63,10 +74,11 @@ def main():
     print(classifier)
     freqPredict = FreqPredictor()
     dance_dict = DANCE_DICT.copy()
-#    time.sleep(57)
     if comm.has_handshake():
         print("starting a new iteration: ")
     input("Press any key to continue")
+    state_queue = deque()
+
     while True:
         if comm.has_handshake():
             # Get data from IMU
@@ -81,18 +93,43 @@ def main():
             # Check if MOVE is idle (TO BE IMPLEMENTED)
             predict = classifier.predict_once(feature_vector)
             predict = predict.lower() 
+            # If Queue is empty append value
+            if not state_queue:
+                state_queue.append(predict)
+            else:
+                # Check length of queue
+                # If queue reaches max value, send data and clear queue
+                if len(state_queue) <= 3:
+                    if predict == state_queue[-1]:
+                        state_queue.append(predict)
+                    else:
+                        state_queue = deque()
 
-            if freqPredict.get_hist_count() < 4:
+                if len(state_queue) >= 3:
+                    final_predict = state_queue.popleft()
+                    print('Final Prediction (Queue):', final_predict)
+                    state_queue = deque()
+                    freqPredict.clear_hist()
+                    try:
+                        comm.sendData(action=final_predict, voltage=0, current=0, power=0,cumpower=0)
+                        continue
+                    except AttributeError:
+                        print("Communication client has not been established")
+                        continue
+
+
+
+            if freqPredict.get_hist_count() <= 5:
                 freqPredict.store_moves(predict)
             else:
                 final_predict = freqPredict.get_predict()
                 freqPredict.clear_hist()
-                print('Final Prediction', final_predict)
-                time.sleep(1)
+                state_queue = deque()
+                print('Final Prediction (Hist):', final_predict)
                 try:
                     comm.sendData(action=final_predict, voltage=0, current=0, power=0, cumpower=0)
                 except AttributeError:
-                    # print("Communicate(): client has not been initialized")
+                    print("Communicate(): client has not been initialized")
                     continue
 
         else:
