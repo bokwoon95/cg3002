@@ -88,7 +88,8 @@ def main():
         if comm.has_handshake():
             # Get data from IMU
             # raw_data = comm.getData(duration=1)
-            raw_data = comm.getData2(window = 60)
+            # raw_data = comm.getData2(window = 60)
+            raw_data = comm.getData2(window = 45)
             if raw_data == None:
                 print("Comms Error: None Type")
                 break
