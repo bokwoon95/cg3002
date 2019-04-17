@@ -2,6 +2,7 @@ import joblib
 
 class Classifier:
     def __init__(self, path):
+        print(path)
         self.clf = joblib.load(path)
         print("path is: " + path)
         print(joblib.load(path))

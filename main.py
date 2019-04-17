@@ -6,6 +6,7 @@ import numpy as np
 import sys
 import time
 from collections import deque
+import os
 
 
 IP_ADDR = ''
@@ -13,6 +14,7 @@ PORT_NUM = 8888
 GROUP_ID = 2
 NUM_DATA_POINTS = 18
 first = True
+FILE_PATH = ''
 
 # TO BE REMOVED AFTER TESTING
 CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
