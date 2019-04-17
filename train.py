@@ -5,6 +5,13 @@ from ml.random_forest_trainer import RandomForestTrainer
 from feature_extractor import FeatureExtractor
 from data.process import Loader
 
+model = 'rf'
+if len(sys.argv) >= 2:
+    model = sys.argv[1]
+# else:
+#     print('Please provide a name for the output model (e.g. "rf")')
+#     os.exit(1)
+
 curr_path = os.path.abspath(os.path.dirname(__file__))
 
 moves = ['doublepump', 'cowboy', 'crab', 'chicken', 'raffles', 'jamesbond', 'runningman', 'hunchback', 'mermaid', 'snake', 'idle', 'logout']
@@ -55,4 +62,4 @@ def top(moves, columns, dir_name, dir_path, file_name, trainer, model_name):
 dir_name = input("Enter directory name: ")
 input_dir_path = os.path.join(curr_path, dir_name)
 file_name = input("Enter training file name: ")
-top(moves, columns_raw, dir_name, input_dir_path, file_name, trainer, 'rf')
+top(moves, columns_raw, dir_name, input_dir_path, file_name, trainer, model)
