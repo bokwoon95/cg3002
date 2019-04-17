@@ -4,7 +4,7 @@ class Classifier:
     def __init__(self, path):
         self.clf = joblib.load(path)
         print("path is: " + path)
-        print(joblib.load("/home/pi/cg3002/models/rf.pkl"))
+        print(joblib.load(path))
 
     def predict(self, Xs):
         return self.clf.predict(Xs)

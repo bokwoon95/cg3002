@@ -91,7 +91,7 @@ class Communicate:
         while time.time() - curr_time < duration:
             # packet, rawdata = self.getIMUPacket()
             packet = self.getIMUPacket()
-            # if packet is not None && packet[-1] == binascii.crc32(rawdata):
+            # if packet is not None and packet[-1] == binascii.crc32(rawdata):
             if packet is not None:
                 if True: # ignore the checksum for now
                 # if packet[-1] == binascii.crc32(rawdata):
