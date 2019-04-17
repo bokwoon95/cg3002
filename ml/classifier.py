@@ -12,7 +12,7 @@ class Classifier:
     def predict_once(self, X):
         result = self.clf.predict([X])[0]
         print(result)
-        print('acc:', self.clf.predict_proba([X]))
+        # print('acc:', self.clf.predict_proba([X]))
         return result
 
 if __name__ == "__main__":

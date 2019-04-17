@@ -158,7 +158,7 @@ class Communicate:
         # Generate random 16 byte initialization vector
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
-        print(payload)
+        # print(payload)
         print("========================================")
         print()
         return base64.b64encode(iv + cipher.encrypt(payload))

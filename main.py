@@ -60,10 +60,15 @@ def get_feature_vector(raw_data):
     for i in range(NUM_DATA_POINTS):
         psd_value = np.mean(np.abs(np.fft.fft(raw_data[:,i]))**2)
         feature4.append(psd_value)
-    
+
     feat_vect = feature1 + feature2 + feature3 + feature4
     return feat_vect
 
+def send_prediction(pred, comm):
+    try:
+        comm.sendData(action=pred, voltage=0, current=0, power=0,cumpower=0)
+    except AttributeError:
+        print("Communication client has not been established")
 
 def main():
     comm = Communicate(IP_ADDR)
@@ -90,48 +95,47 @@ def main():
 
             # Process data
             feature_vector = get_feature_vector(raw_data)
-            # Check if MOVE is idle (TO BE IMPLEMENTED)
             predict = classifier.predict_once(feature_vector)
-            predict = predict.lower() 
-            # If Queue is empty append value
-            if not state_queue:
-                state_queue.append(predict)
-            else:
-                # Check length of queue
-                # If queue reaches max value, send data and clear queue
-                if len(state_queue) <= 3:
-                    if predict == state_queue[-1]:
-                        state_queue.append(predict)
-                    else:
-                        state_queue = deque()
+            predict = predict.lower()
+        
+            freqPredict.store_moves(predict)
+            state_queue.append(predict)
 
-                if len(state_queue) >= 3:
+            if(len(state_queue) == 2):
+                if(predict == state_queue[0]):
                     final_predict = state_queue.popleft()
                     print('Final Prediction (Queue):', final_predict)
-                    state_queue = deque()
+                    send_prediction(final_predict, comm)
+                    state_queue.clear()
                     freqPredict.clear_hist()
-                    try:
-                        comm.sendData(action=final_predict, voltage=0, current=0, power=0,cumpower=0)
-                        continue
-                    except AttributeError:
-                        print("Communication client has not been established")
-                        continue
-
-
-
-            if freqPredict.get_hist_count() <= 5:
-                freqPredict.store_moves(predict)
-            else:
-                final_predict = freqPredict.get_predict()
-                freqPredict.clear_hist()
-                state_queue = deque()
-                print('Final Prediction (Hist):', final_predict)
-                try:
-                    comm.sendData(action=final_predict, voltage=0, current=0, power=0, cumpower=0)
-                except AttributeError:
-                    print("Communicate(): client has not been initialized")
                     continue
-
+                else:
+                    if(freqPredict.get_hist_count() == 5):
+                        final_predict = freqPredict.get_predict()
+                        print('Final Prediction (Hist):', final_predict)
+                        send_prediction(final_predict, comm)
+                        state_queue.clear()
+                        freqPredict.clear_hist()
+                        continue
+                    else:
+                        state_queue.clear()
+                        state_queue.append(predict)
+                        continue
+            else:
+                if(freqPredict.get_hist_count() == 5):
+                    final_predict = freqPredict.get_predict()
+                    print('Final Prediction (Hist):', final_predict)
+                    send_prediction(final_predict, comm)
+                    state_queue.clear()
+                    freqPredict.clear_hist()
+                    continue
+                else:
+                    if(predict == state_queue[0]):
+                        continue
+                    else:
+                        state_queue.clear()
+                        state_queue.append(predict)
+                        continue
         else:
             print('Handshake broken')
 
