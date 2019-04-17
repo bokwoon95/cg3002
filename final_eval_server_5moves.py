@@ -34,7 +34,12 @@ class Server(threading.Thread):
                 'raffles', 'raffles', 'raffles', 'raffles',
                 'chicken', 'chicken', 'chicken', 'chicken',
                 'crab', 'crab', 'crab', 'crab',
-                'cowboy', 'cowboy', 'cowboy', 'cowboy']
+                'cowboy', 'cowboy', 'cowboy', 'cowboy',
+                'runningman', 'runningman', 'runningman', 'runningman',
+                'doublepump', 'doublepump', 'doublepump', 'doublepump',
+                'mermaid', 'mermaid', 'mermaid', 'mermaid',
+                'snake', 'snake', 'snake', 'snake',
+                'jamesbond', 'jamesbond', 'jamesbond', 'jamesbond']
         self.n_moves = len(self.actions)
         self.indices = np.arange(self.n_moves)
         self.filename = "logServer.csv"
@@ -44,7 +49,7 @@ class Server(threading.Thread):
         self.action = None
         self.action_set_time = None
         self.x = 0
-        self.timeout = 30
+        self.timeout = 60
         self.no_response = False
         self.connection = None
         self.timer = None
