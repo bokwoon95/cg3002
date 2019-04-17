@@ -52,7 +52,7 @@ class FeatureExtractor:
         data = pd.read_csv(input_file_path, header=None, names=self.column_names)
         print(type(data['move']))
         print(data.dtypes)
-        return slide(60, 10, data)
+        return slide(45, 10, data)
 
     @staticmethod
     def save(dataframe, path):
