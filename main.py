@@ -13,8 +13,6 @@ PORT_NUM = 8888
 GROUP_ID = 2
 NUM_DATA_POINTS = 18
 first = True
-FILE_PATH = "/home/pi/cg3002/models/rf.pkl"
-
 
 # TO BE REMOVED AFTER TESTING
 CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
@@ -141,11 +139,14 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print('Invalid number of arguments')
-        print('python3 main.py [IP address]')
+        print('python3 main.py <IP_addr> [model]')
         sys.exit()
     IP_ADDR = sys.argv[1]
+    FILE_PATH = "/home/pi/cg3002/models/rf.pkl"
+    if len(sys.argv) >= 3:
+        FILE_PATH = os.path.expanduser(sys.argv[2])
     # PORT_NUM = int(sys.argv[2])
     # Execute the main program
     main()
