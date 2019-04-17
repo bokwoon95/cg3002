@@ -9,7 +9,7 @@ class FeatureExtractor:
         self.moves = moves
         self.column_names = column_names
         self.file_name = file_name
- 
+
     def top(self):
         csv_path = os.path.join(self.input_dir_path, self.file_name+'.csv')
         features = self.extract(csv_path)
@@ -25,6 +25,7 @@ class FeatureExtractor:
             attributes = self.column_names.copy()
             #discount first item in header
             attributes.pop(0)
+            print(self.moves)
             ls = []
             num_rows = data.shape[0]
             for start in range(0, num_rows-size, step):
