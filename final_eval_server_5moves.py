@@ -49,11 +49,12 @@ class Server(threading.Thread):
         self.action = None
         self.action_set_time = None
         self.x = 0
-        self.timeout = 60
+        self.timeout = 20
         self.no_response = False
         self.connection = None
         self.timer = None
         self.logout = False
+        self.correct = 0
 
     def run(self):
         random.shuffle(self.indices)
@@ -80,7 +81,7 @@ class Server(threading.Thread):
                     decodedmsg = self.auth.decryptText(msg, secret_key)
                     if decodedmsg['action'] == "logout":
                         self.logout = True
-                        print("bye bye")
+                        print("bye bye. Total accuracy is {}%".format(self.correct*100/40))
                         self.stop()
                     elif len(decodedmsg['action']) == 0:
                         pass
@@ -92,6 +93,7 @@ class Server(threading.Thread):
                         print("{} :: {} :: {} :: {} :: {}".format(decodedmsg['action'], decodedmsg['voltage'], decodedmsg['current'], decodedmsg['power'], decodedmsg['cumpower']))
                         if self.action == decodedmsg['action'].lower():
                             print("CORRECT")
+                            self.correct += 1
                         else:
                             print("WRONG")
                         self.get_action()  # Get new action
