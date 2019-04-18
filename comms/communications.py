@@ -66,7 +66,6 @@ class Communicate:
             if endByte == 'E':
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
-                #import pdb; pdb.set_trace()
         # return unpacked_data, dataBytes[:-4]
         return unpacked_data
 
@@ -103,6 +102,8 @@ class Communicate:
                     print(packet)
                     print("--------------------------------------------------------------------------------")
                 # window_data.append(packet)
+            else:
+                get_handshake()
             # else: # for debugging checksum fails
             #     print("--------------------------------------------------------------------------------")
             #     print("checksum no match:")

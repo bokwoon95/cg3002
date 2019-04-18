@@ -72,7 +72,6 @@ def getIMUPacket():
         if endByte == 'E':
             unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
             # print(unpacked_data)
-            #import pdb; pdb.set_trace(
             print("Received 'E'")
         else:
             print("Did not receive 'E' byte")
@@ -124,7 +123,7 @@ print("Sensor data: " + str(sensordata))
 print("Power data: " + str(powerdata))
 
 print("Testing sensors")
-sensordata = getData("Doublepump", 10)
+sensordata = getData("Doublepump", 1000)
 
 print("DONE")
 print("Testing comms functions")
