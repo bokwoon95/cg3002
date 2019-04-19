@@ -55,7 +55,7 @@ class Communicate:
     def getIMUPacket(self):
         unpacked_data = None
         self.serial.write(DATA_R)  # Request for arduino to send data over
-        rawData = self.serial.read() 
+        rawData = self.serial.read()
         if (rawData == EMPTY):
             print("Empty Buffer")
             return None
@@ -66,7 +66,6 @@ class Communicate:
             if endByte == 'E':
                 unpacked_data = struct.unpack('<hhhhhhhhhhhhhhhhhhI', dataBytes)
                 # print(unpacked_data)
-        # return unpacked_data, dataBytes[:-4]
         return unpacked_data
 
     def getPowerPacket(self):
@@ -84,32 +83,16 @@ class Communicate:
     def getData(self, duration=1000):
         """ This method returns a list of IMU sensor data
             Duration in seconds """
-            
+
         window_data = []
         curr_time = time.time()
         while time.time() - curr_time < duration:
-            # packet, rawdata = self.getIMUPacket()
             packet = self.getIMUPacket()
-            # if packet is not None and packet[-1] == binascii.crc32(rawdata):
             if packet is not None:
-                if True: # ignore the checksum for now
-                # if packet[-1] == binascii.crc32(rawdata):
+                if packet[-1] == binascii.crc32(packet[:-2]):
                     window_data.append(packet)
                 else:
-                    print("--------------------------------------------------------------------------------")
                     print("checksum no match:")
-                    print(packet[-1], checksum)
-                    print(packet)
-                    print("--------------------------------------------------------------------------------")
-                # window_data.append(packet)
-            else:
-                get_handshake()
-            # else: # for debugging checksum fails
-            #     print("--------------------------------------------------------------------------------")
-            #     print("checksum no match:")
-            #     print(packet[-1], checksum)
-            #     print(packet)
-            #     print("--------------------------------------------------------------------------------")
         return window_data
 
     def getData2(self, window=90):
@@ -141,7 +124,7 @@ class Communicate:
            #time.sleep(5 / 1000)
         else:
            print("packet received is None")
-           errCount += 1 
+           errCount += 1
         dataCount += 1
         #with open('training.csv', 'a') as fd:
         #    csv.writer(fd).writerows(arr_2d)
@@ -159,22 +142,12 @@ class Communicate:
         # Generate random 16 byte initialization vector
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_CBC, iv)
-        # print(payload)
         print("========================================")
         print()
         return base64.b64encode(iv + cipher.encrypt(payload))
 
     def sendData(self, action, voltage=0, current=0, power=0, cumpower=0, secret_key='0123456789ABCDEF'):
         """ Send data to the server """
-        # dictionary = {
-        #     'action': action, 
-        #     'voltage': voltage,
-        #     'current': current,
-        #     'power': power,
-        #     'cumpower': cumpower
-        # }
         listt = [action, voltage, current, power, cumpower]
         encrypted_msg = self.encryptText(listt, secret_key)
-        # time.sleep(60)
         self.client.send(encrypted_msg)
-        # self.client.close()
