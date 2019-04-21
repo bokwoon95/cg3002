@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source venv/bin/activate
+printf "0123456789ABCDEF\n" | python3 final_eval_server_5moves.py 192.168.43.131 8888 2
