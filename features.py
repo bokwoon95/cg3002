@@ -1,5 +1,7 @@
 import numpy as np
 
+NUM_DATA_POINTS = 18
+
 CLASSES = ['acc1_x', 'acc1_y', 'acc1_z', 'gyro1_x', 'gyro1_y', 'gyro1_z',
             'acc2_x', 'acc2_y', 'acc2_z', 'gyro2_x', 'gyro2_y', 'gyro2_z',
             'acc3_x', 'acc3_y', 'acc3_z', 'gyro3_x', 'gyro3_y', 'gyro3_z']
@@ -83,25 +85,27 @@ def get_feature_vector2(raw_data):
     return feat_vect
 
 
+
 def get_feature_vector(raw_data):
-    """ This method takes in the raw data (list of IMU sensor data) 
-        and returns a dict with the mean, var min max of each IMU sensor data
-    """
     feat_vect = []
     raw_data = np.array(raw_data)
-    feat_dict = {}
-    for i in range(len(CLASSES)):
-        #print(raw_data[:,i])
+    feature1 = []
+    for i in range(NUM_DATA_POINTS):
         mean = np.mean(raw_data[:,i])
+        feature1.append(mean)
+    feature2 = []
+    for i in range(NUM_DATA_POINTS):
         variance = np.var(raw_data[:,i])
-        min_value = np.min(raw_data[:,i])
-        max_value = np.max(raw_data[:,i])        
-        feat_dict['mean_' + CLASSES[i]] = mean
-        feat_dict['var_' + CLASSES[i]] = variance
-        feat_dict['min_' + CLASSES[i]] = min_value
-        feat_dict['max_' + CLASSES[i]] = max_value
-    
-    for f in sorted(feat_dict):
-        feat_vect.append(feat_dict[f])
-    
+        feature2.append(variance)
+    feature3 = []
+    for i in range(NUM_DATA_POINTS):
+        q75, q25 = np.percentile(raw_data[:,i], [75,25])
+        irq_value = q75 - q25
+        feature3.append(irq_value)
+    feature4 = []
+    for i in range(NUM_DATA_POINTS):
+        psd_value = np.mean(np.abs(np.fft.fft(raw_data[:,i]))**2)
+        feature4.append(psd_value)
+
+    feat_vect = feature1 + feature2 + feature3 + feature4
     return feat_vect
